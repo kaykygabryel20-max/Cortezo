@@ -257,7 +257,7 @@ select.form-input option{background:var(--surface2)}
           <span class="table-label">Planos ativos</span>
           <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openModal('modal-ativar')">+ Ativar plano</button>
         </div>
-        <table><thead><tr><th>Cliente</th><th>Plano</th><th>Pagamento</th><th>Ativação</th><th>Renovação</th><th>Status</th><th></th></tr></thead>
+        <table><thead><tr><th>Cliente</th><th>Plano</th><th>Pagamento</th><th>Ativação</th><th>Renovação</th><th>Status</th><th></th><th></th></tr></thead>
         <tbody id="planos-table"><tr><td colspan="7" class="loading-row">Carregando...</td></tr></tbody></table>
       </div>
     </div>
@@ -281,16 +281,25 @@ select.form-input option{background:var(--surface2)}
 
     <!-- FICHAS & COMISSÕES -->
     <div class="section" id="section-fichas">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="font-size:12px;color:var(--muted)">Filtrar por mês:</div>
+          <select class="form-input" id="fichas-mes-filtro" onchange="renderFichas()" style="width:180px;padding:6px 10px">
+            <option value="">Todo o período</option>
+          </select>
+        </div>
+        <div id="fichas-mes-label" style="font-size:12px;color:var(--muted)"></div>
+      </div>
       <div class="grid-3" style="margin-bottom:24px" id="fichas-summary"></div>
       <div class="table-wrap">
-        <div class="table-header"><span class="table-label">Distribuição por barbeiro</span></div>
-        <table><thead><tr><th>Barbeiro</th><th>Fichas</th><th>% do pool</th><th>Comissão (R$)</th><th>Fichas visuais</th></tr></thead>
+        <div class="table-header"><span class="table-label">Distribuição por barbeiro</span><span id="fichas-periodo-badge" style="font-size:11px;color:var(--muted)"></span></div>
+        <table><thead><tr><th>Barbeiro</th><th>Fichas no período</th><th>% do pool</th><th>Comissão estimada (R$)</th><th>Fichas visuais</th></tr></thead>
         <tbody id="fichas-table"><tr><td colspan="5" class="loading-row">Carregando...</td></tr></tbody></table>
       </div>
       <div class="sep"></div>
       <div style="font-size:12px;color:var(--muted);line-height:1.9">
         <strong style="color:var(--text)">Sistema poker de fichas:</strong><br>
-        Cada atendimento gera 1 ficha ao barbeiro responsável. O pool de comissão (50% do total arrecadado) é dividido proporcionalmente às fichas de cada barbeiro.
+        Cada atendimento gera 1 ficha ao barbeiro responsável. O pool de comissão (50% do total arrecadado) é dividido proporcionalmente às fichas de cada barbeiro no período selecionado.
       </div>
     </div>
 
@@ -316,16 +325,6 @@ select.form-input option{background:var(--surface2)}
           <option value="cabelo_barba">Cabelo + Barba — R$ 159,90/mês</option>
         </select>
       </div></div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Data de ativação</label>
-          <input type="date" class="form-input" id="ap-data" oninput="calcRenovacaoPreview()">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Renovação automática em</label>
-          <input type="text" class="form-input" id="ap-renovacao-preview" readonly placeholder="Selecione a data">
-        </div>
-      </div>
       <div class="form-actions">
         <button class="btn btn-ghost" onclick="closeModal('modal-ativar')">Cancelar</button>
         <button class="btn btn-primary" onclick="nextStep(2)">Próximo</button>
@@ -345,35 +344,21 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
     <div id="step-3" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data de ativação</label>
+          <input type="date" class="form-input" id="ap-data" oninput="updateResumo()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Renovação em</label>
+          <input type="text" class="form-input" id="ap-renovacao" readonly>
+        </div>
+      </div>
       <div id="ap-resumo" style="background:var(--surface2);border-radius:8px;padding:14px;font-size:13px;margin-top:4px"></div>
       <div class="form-actions" style="margin-top:14px">
         <button class="btn btn-ghost" onclick="nextStep(2)">Voltar</button>
         <button class="btn btn-success" id="btn-confirmar-plano" onclick="confirmarPlano()">Confirmar ativação</button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL RENOVAR PLANO -->
-<div class="overlay" id="modal-renovar">
-  <div class="modal" style="width:420px">
-    <div class="modal-title">Renovar plano</div>
-    <input type="hidden" id="ren-plano-id">
-    <div class="form-row full">
-      <div class="form-group">
-        <label class="form-label">Data de início da renovação</label>
-        <input type="date" class="form-input" id="ren-data" oninput="calcRenovacaoModal()">
-      </div>
-    </div>
-    <div class="form-row full">
-      <div class="form-group">
-        <label class="form-label">Nova data de vencimento (30 dias)</label>
-        <input type="text" class="form-input" id="ren-nova-data" readonly placeholder="Calculado automaticamente">
-      </div>
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-renovar')">Cancelar</button>
-      <button class="btn btn-success" id="btn-confirmar-renovar" onclick="confirmarRenovacao()">Confirmar renovação</button>
     </div>
   </div>
 </div>
@@ -467,6 +452,7 @@ async function loadLancamentos() {
   const {data, error} = await sb.from('lancamentos').select('*').order('created_at', {ascending:false});
   if(error) throw error;
   allLancamentos = data || [];
+  populateMesFiltro();
 }
 
 async function loadFichas() {
@@ -575,6 +561,7 @@ function renderPlanos() {
       <td>${fmtDate(p.data_renovacao)}</td>
       <td><span class="badge badge-success">${p.status}</span></td>
       <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="renovarPlano('${p.id}','${p.plano}')">Renovar</button></td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirPlano('${p.id}','${p.cliente}')">🗑</button></td>
     </tr>`).join('');
 }
 
@@ -606,30 +593,79 @@ async function renderBarbeiros() {
     </div>`;}).join('');
 }
 
+function populateMesFiltro() {
+  const sel = document.getElementById('fichas-mes-filtro');
+  if (!sel) return;
+  // Collect distinct year-months from lancamentos
+  const meses = new Set();
+  allLancamentos.forEach(l => {
+    const d = l.data_atendimento || (l.created_at ? l.created_at.split('T')[0] : null);
+    if (d) meses.add(d.substring(0,7));
+  });
+  const sorted = Array.from(meses).sort().reverse();
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Todo o período</option>';
+  sorted.forEach(m => {
+    const [y,mo] = m.split('-');
+    const label = new Date(Number(y), Number(mo)-1, 1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = label.charAt(0).toUpperCase()+label.slice(1);
+    sel.appendChild(opt);
+  });
+  if (cur) sel.value = cur;
+}
+
 async function renderFichas() {
-  const fichasRows = await loadFichas();
+  populateMesFiltro();
+  const mesFiltro = document.getElementById('fichas-mes-filtro')?.value || '';
+
+  // Filter lancamentos by selected month
+  const lans = mesFiltro
+    ? allLancamentos.filter(l => {
+        const d = l.data_atendimento || (l.created_at ? l.created_at.split('T')[0] : '');
+        return d.startsWith(mesFiltro);
+      })
+    : allLancamentos;
+
+  // Build fichasMap from filtered lancamentos (count per barber in period)
   const fichasMap = {};
   BARBERS.forEach(b => fichasMap[b] = 0);
-  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
+  lans.forEach(l => { if(fichasMap[l.barbeiro]!==undefined) fichasMap[l.barbeiro]++; });
+
   const totalFichas = Object.values(fichasMap).reduce((a,b)=>a+b,0);
+
+  // Pool: use all active plans regardless of filter (monthly revenue is fixed)
   const totalPool = allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
   const commPool = totalPool * 0.5;
+
+  // Period label
+  let periodoLabel = 'Todo o período';
+  if (mesFiltro) {
+    const [y,mo] = mesFiltro.split('-');
+    periodoLabel = new Date(Number(y), Number(mo)-1, 1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+    periodoLabel = periodoLabel.charAt(0).toUpperCase()+periodoLabel.slice(1);
+  }
+  const badge = document.getElementById('fichas-periodo-badge');
+  if(badge) badge.textContent = periodoLabel;
+
   const summary = document.getElementById('fichas-summary');
   if(summary) summary.innerHTML = `
-    <div class="card"><div class="card-title">Total fichas</div><div class="card-value">${totalFichas}</div></div>
+    <div class="card"><div class="card-title">Fichas no período</div><div class="card-value">${totalFichas}</div></div>
     <div class="card"><div class="card-title">Pool comissão (50%)</div><div class="card-value" style="color:var(--success)">R$ ${commPool.toFixed(2).replace('.',',')}</div></div>
-    <div class="card"><div class="card-title">Barbeiros ativos</div><div class="card-value">${BARBERS.length}</div></div>`;
+    <div class="card"><div class="card-title">Período</div><div class="card-value" style="font-size:15px;letter-spacing:0">${periodoLabel}</div></div>`;
+
   const tbody = document.getElementById('fichas-table');
   if(!tbody) return;
   tbody.innerHTML = BARBERS.map((b,i)=>{
     const fichas = fichasMap[b]||0;
     const pct = totalFichas>0 ? Math.round((fichas/totalFichas)*100) : 0;
     const comm = (commPool*(totalFichas>0?fichas/totalFichas:0)).toFixed(2).replace('.',',');
-    const chips = Array.from({length:fichas},()=>`<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${BARBER_COLORS[i]};color:#111;text-align:center;line-height:20px;font-size:10px;margin:1px">✦</span>`).join('');
+    const chips = Array.from({length:Math.min(fichas,20)},()=>`<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${BARBER_COLORS[i]};color:#111;text-align:center;line-height:20px;font-size:10px;margin:1px">✦</span>`).join('');
+    const extra = fichas > 20 ? `<span style="font-size:11px;color:var(--muted)"> +${fichas-20}</span>` : '';
     return `<tr>
       <td style="font-weight:500">${b}</td><td>${fichas}</td><td>${pct}%</td>
       <td style="color:var(--success)">R$ ${comm}</td>
-      <td style="line-height:1.4">${chips||'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td style="line-height:1.4">${chips||'<span style="color:var(--muted);font-size:12px">—</span>'}${extra}</td>
     </tr>`;}).join('');
 }
 
@@ -701,31 +737,11 @@ async function confirmarPlano() {
   renderPlanos(); renderDashboard();
 }
 
-function renovarPlano(id, plano) {
-  document.getElementById('ren-plano-id').value = id;
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('ren-data').value = today;
-  document.getElementById('ren-nova-data').value = '';
-  calcRenovacaoModal();
-  openModal('modal-renovar');
-}
-
-async function confirmarRenovacao() {
-  const id = document.getElementById('ren-plano-id').value;
-  const data = document.getElementById('ren-data').value;
-  if(!data){ showToast('Selecione a data de renovação', true); return; }
-  const dt = new Date(data+'T12:00');
-  const nova = new Date(dt); nova.setDate(nova.getDate()+30);
-  const btn = document.getElementById('btn-confirmar-renovar');
-  btn.textContent = 'Salvando...'; btn.disabled = true;
-  const {error} = await sb.from('planos').update({
-    data_ativacao: dt.toISOString().split('T')[0],
-    data_renovacao: nova.toISOString().split('T')[0]
-  }).eq('id', id);
-  btn.textContent = 'Confirmar renovação'; btn.disabled = false;
+async function renovarPlano(id, plano) {
+  const dt = new Date(); dt.setDate(dt.getDate()+30);
+  const {error} = await sb.from('planos').update({data_renovacao: dt.toISOString().split('T')[0]}).eq('id', id);
   if(error){ showToast('Erro: '+error.message, true); return; }
-  closeModal('modal-renovar');
-  showToast('Plano renovado! Vencimento: '+nova.toLocaleDateString('pt-BR'));
+  showToast('Plano renovado! Pool atualizado.');
   await loadPlanos();
   renderPlanos(); renderDashboard();
 }
@@ -742,6 +758,15 @@ async function excluirLancamento(id, barbeiro) {
   await loadLancamentos();
   renderLancamentos();
   renderDashboard();
+}
+
+async function excluirPlano(id, cliente) {
+  if(!confirm('Excluir o plano de '+cliente+'? Esta ação não pode ser desfeita.')) return;
+  const {error} = await sb.from('planos').delete().eq('id', id);
+  if(error){ showToast('Erro ao excluir: '+error.message, true); return; }
+  showToast('Plano de '+cliente+' excluído.');
+  await loadPlanos();
+  renderPlanos(); renderDashboard();
 }
 
 function ativarParaCliente(id, nome) {
@@ -767,7 +792,7 @@ function showSection(id) {
 
 function openModal(id) {
   document.getElementById(id).classList.add('open');
-  if(id==='modal-ativar'){ currentStep=1; selectedPayment=''; showStep(1); populateClienteSelects(); document.getElementById('ap-data').value=new Date().toISOString().split('T')[0]; calcRenovacaoPreview(); }
+  if(id==='modal-ativar'){ currentStep=1; selectedPayment=''; showStep(1); populateClienteSelects(); document.getElementById('ap-data').value=new Date().toISOString().split('T')[0]; }
   if(id==='modal-cliente'){ ['nc-nome','nc-tel','nc-email','nc-nasc'].forEach(i=>document.getElementById(i).value=''); }
 }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
@@ -789,18 +814,6 @@ function selectPayment(p){
     const el = document.getElementById(key+'-opt');
     if(el) el.classList.toggle('selected', x===p);
   });
-}
-
-function calcRenovacaoPreview(){
-  const d=document.getElementById('ap-data').value; if(!d) return;
-  const dt=new Date(d+'T12:00'); const ren=new Date(dt); ren.setDate(ren.getDate()+30);
-  document.getElementById('ap-renovacao-preview').value=ren.toLocaleDateString('pt-BR');
-}
-
-function calcRenovacaoModal(){
-  const d=document.getElementById('ren-data').value; if(!d) return;
-  const dt=new Date(d+'T12:00'); const ren=new Date(dt); ren.setDate(ren.getDate()+30);
-  document.getElementById('ren-nova-data').value=ren.toLocaleDateString('pt-BR');
 }
 
 function updateResumo(){
