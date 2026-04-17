@@ -316,6 +316,16 @@ select.form-input option{background:var(--surface2)}
           <option value="cabelo_barba">Cabelo + Barba — R$ 159,90/mês</option>
         </select>
       </div></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data de ativação</label>
+          <input type="date" class="form-input" id="ap-data" oninput="calcRenovacaoPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Renovação automática em</label>
+          <input type="text" class="form-input" id="ap-renovacao-preview" readonly placeholder="Selecione a data">
+        </div>
+      </div>
       <div class="form-actions">
         <button class="btn btn-ghost" onclick="closeModal('modal-ativar')">Cancelar</button>
         <button class="btn btn-primary" onclick="nextStep(2)">Próximo</button>
@@ -335,21 +345,35 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
     <div id="step-3" style="display:none">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Data de ativação</label>
-          <input type="date" class="form-input" id="ap-data" oninput="updateResumo()">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Renovação em</label>
-          <input type="text" class="form-input" id="ap-renovacao" readonly>
-        </div>
-      </div>
       <div id="ap-resumo" style="background:var(--surface2);border-radius:8px;padding:14px;font-size:13px;margin-top:4px"></div>
       <div class="form-actions" style="margin-top:14px">
         <button class="btn btn-ghost" onclick="nextStep(2)">Voltar</button>
         <button class="btn btn-success" id="btn-confirmar-plano" onclick="confirmarPlano()">Confirmar ativação</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RENOVAR PLANO -->
+<div class="overlay" id="modal-renovar">
+  <div class="modal" style="width:420px">
+    <div class="modal-title">Renovar plano</div>
+    <input type="hidden" id="ren-plano-id">
+    <div class="form-row full">
+      <div class="form-group">
+        <label class="form-label">Data de início da renovação</label>
+        <input type="date" class="form-input" id="ren-data" oninput="calcRenovacaoModal()">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label class="form-label">Nova data de vencimento (30 dias)</label>
+        <input type="text" class="form-input" id="ren-nova-data" readonly placeholder="Calculado automaticamente">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-renovar')">Cancelar</button>
+      <button class="btn btn-success" id="btn-confirmar-renovar" onclick="confirmarRenovacao()">Confirmar renovação</button>
     </div>
   </div>
 </div>
@@ -677,11 +701,31 @@ async function confirmarPlano() {
   renderPlanos(); renderDashboard();
 }
 
-async function renovarPlano(id, plano) {
-  const dt = new Date(); dt.setDate(dt.getDate()+30);
-  const {error} = await sb.from('planos').update({data_renovacao: dt.toISOString().split('T')[0]}).eq('id', id);
+function renovarPlano(id, plano) {
+  document.getElementById('ren-plano-id').value = id;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('ren-data').value = today;
+  document.getElementById('ren-nova-data').value = '';
+  calcRenovacaoModal();
+  openModal('modal-renovar');
+}
+
+async function confirmarRenovacao() {
+  const id = document.getElementById('ren-plano-id').value;
+  const data = document.getElementById('ren-data').value;
+  if(!data){ showToast('Selecione a data de renovação', true); return; }
+  const dt = new Date(data+'T12:00');
+  const nova = new Date(dt); nova.setDate(nova.getDate()+30);
+  const btn = document.getElementById('btn-confirmar-renovar');
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+  const {error} = await sb.from('planos').update({
+    data_ativacao: dt.toISOString().split('T')[0],
+    data_renovacao: nova.toISOString().split('T')[0]
+  }).eq('id', id);
+  btn.textContent = 'Confirmar renovação'; btn.disabled = false;
   if(error){ showToast('Erro: '+error.message, true); return; }
-  showToast('Plano renovado! Pool atualizado.');
+  closeModal('modal-renovar');
+  showToast('Plano renovado! Vencimento: '+nova.toLocaleDateString('pt-BR'));
   await loadPlanos();
   renderPlanos(); renderDashboard();
 }
@@ -723,7 +767,7 @@ function showSection(id) {
 
 function openModal(id) {
   document.getElementById(id).classList.add('open');
-  if(id==='modal-ativar'){ currentStep=1; selectedPayment=''; showStep(1); populateClienteSelects(); document.getElementById('ap-data').value=new Date().toISOString().split('T')[0]; }
+  if(id==='modal-ativar'){ currentStep=1; selectedPayment=''; showStep(1); populateClienteSelects(); document.getElementById('ap-data').value=new Date().toISOString().split('T')[0]; calcRenovacaoPreview(); }
   if(id==='modal-cliente'){ ['nc-nome','nc-tel','nc-email','nc-nasc'].forEach(i=>document.getElementById(i).value=''); }
 }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
@@ -745,6 +789,18 @@ function selectPayment(p){
     const el = document.getElementById(key+'-opt');
     if(el) el.classList.toggle('selected', x===p);
   });
+}
+
+function calcRenovacaoPreview(){
+  const d=document.getElementById('ap-data').value; if(!d) return;
+  const dt=new Date(d+'T12:00'); const ren=new Date(dt); ren.setDate(ren.getDate()+30);
+  document.getElementById('ap-renovacao-preview').value=ren.toLocaleDateString('pt-BR');
+}
+
+function calcRenovacaoModal(){
+  const d=document.getElementById('ren-data').value; if(!d) return;
+  const dt=new Date(d+'T12:00'); const ren=new Date(dt); ren.setDate(ren.getDate()+30);
+  document.getElementById('ren-nova-data').value=ren.toLocaleDateString('pt-BR');
 }
 
 function updateResumo(){
