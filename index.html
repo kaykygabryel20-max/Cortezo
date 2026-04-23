@@ -269,7 +269,7 @@ select.form-input option{background:var(--surface2)}
         <button class="btn btn-primary" onclick="openModal('modal-cliente')">+ Novo cliente</button>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Nome</th><th>Telefone</th><th>Plano ativo</th><th>Cadastro</th><th>Atendimentos</th><th></th></tr></thead>
+        <table><thead><tr><th>Nome</th><th>Telefone</th><th>Plano ativo</th><th>Cadastro</th><th>Atendimentos</th><th></th><th></th></tr></thead>
         <tbody id="clientes-table"><tr><td colspan="6" class="loading-row">Carregando...</td></tr></tbody></table>
       </div>
     </div>
@@ -524,7 +524,7 @@ function renderLancamentos() {
 function renderClientes(filter='') {
   const tbody = document.getElementById('clientes-table');
   const list = filter ? allClientes.filter(c=>c.nome.toLowerCase().includes(filter.toLowerCase())||c.telefone.includes(filter)) : allClientes;
-  if(!list.length){ tbody.innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">Nenhum cliente encontrado</td></tr>'; return; }
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Nenhum cliente encontrado</td></tr>'; return; }
   tbody.innerHTML = list.map(c=>{
     const plano = allPlanos.find(p=>p.cliente_id===c.id&&p.status==='ativo');
     const atend = allLancamentos.filter(l=>l.cliente===c.nome).length;
@@ -535,6 +535,7 @@ function renderClientes(filter='') {
       <td style="color:var(--muted)">${fmtDate(c.created_at)}</td>
       <td>${atend}</td>
       <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="ativarParaCliente('${c.id}','${c.nome}')">+ Plano</button></td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirCliente('${c.id}','${c.nome}')">🗑</button></td>
     </tr>`;}).join('');
 }
 
@@ -639,23 +640,13 @@ async function salvarCliente() {
   const nome = document.getElementById('nc-nome').value.trim();
   const telefone = document.getElementById('nc-tel').value.trim();
   if(!nome||!telefone){ showToast('Nome e telefone obrigatórios', true); return; }
-
-  // Check for duplicates before inserting
   const nomeNorm = nome.toLowerCase();
   const telNorm = telefone.replace(/\D/g,'');
   const dupNome = allClientes.find(c => c.nome.toLowerCase() === nomeNorm);
   const dupTel  = allClientes.find(c => c.telefone.replace(/\D/g,'') === telNorm && telNorm.length >= 8);
-
-  if(dupNome && dupTel) {
-    showToast('Já existe um cliente com esse nome e telefone: '+dupNome.nome, true); return;
-  }
-  if(dupNome) {
-    showToast('Já existe um cliente com o nome "'+dupNome.nome+'" cadastrado.', true); return;
-  }
-  if(dupTel) {
-    showToast('O telefone '+telefone+' já está cadastrado para '+dupTel.nome+'.', true); return;
-  }
-
+  if(dupNome && dupTel){ showToast('Já existe um cliente com esse nome e telefone: '+dupNome.nome, true); return; }
+  if(dupNome){ showToast('Já existe um cliente com o nome "'+dupNome.nome+'" cadastrado.', true); return; }
+  if(dupTel){ showToast('O telefone '+telefone+' já está cadastrado para '+dupTel.nome+'.', true); return; }
   const btn = document.getElementById('btn-salvar-cliente');
   btn.textContent = 'Salvando...'; btn.disabled = true;
   const {error} = await sb.from('clientes').insert([{nome, telefone, email:document.getElementById('nc-email').value, nascimento:document.getElementById('nc-nasc').value||null}]);
@@ -714,6 +705,18 @@ async function excluirLancamento(id, barbeiro) {
   showToast('Atendimento excluído. Ficha de '+barbeiro+' atualizada.');
   await loadLancamentos();
   renderLancamentos();
+  renderDashboard();
+}
+
+async function excluirCliente(id, nome) {
+  if(!confirm('Excluir o cliente '+nome+'? Isso também removerá os planos e lançamentos vinculados a ele.')) return;
+  await sb.from('planos').delete().eq('cliente_id', id);
+  await sb.from('lancamentos').delete().eq('cliente', nome);
+  const {error} = await sb.from('clientes').delete().eq('id', id);
+  if(error){ showToast('Erro ao excluir: '+error.message, true); return; }
+  showToast('Cliente '+nome+' excluído.');
+  await Promise.all([loadClientes(), loadPlanos(), loadLancamentos()]);
+  renderClientes(document.getElementById('search-cliente')?.value||'');
   renderDashboard();
 }
 
