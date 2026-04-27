@@ -336,17 +336,23 @@ select.form-input option{background:var(--surface2)}
               </select>
             </div>
             <div class="form-group" style="min-width:160px;flex:1">
-              <label class="form-label">Pool (registrar lançamento)</label>
+              <label class="form-label">Serviço / Pool</label>
               <select class="form-input" id="admin-pool" onchange="atualizarPoolPreview()">
-                <option value="">Sem pool — só ficha</option>
+                <option value="">Sem serviço — só ficha</option>
                 <option value="cabelo">Cabelo</option>
                 <option value="barba">Barba</option>
                 <option value="cabelo_barba">Cabelo + Barba</option>
               </select>
             </div>
+            <div class="form-group" style="min-width:160px;flex:1">
+              <label class="form-label">Cliente (manual ou aleatório)</label>
+              <select class="form-input" id="admin-cliente-manual" onchange="atualizarPoolPreview()">
+                <option value="">🎲 Sortear do pool automaticamente</option>
+              </select>
+            </div>
             <div class="form-group" style="width:100px">
               <label class="form-label">Fichas</label>
-              <input type="number" class="form-input" id="admin-qtd" min="1" max="50" value="1">
+              <input type="number" class="form-input" id="admin-qtd" min="1" max="50" value="1" oninput="atualizarPoolPreview()">
             </div>
             <div class="form-group" style="width:160px">
               <label class="form-label">Motivo (opcional)</label>
@@ -355,6 +361,10 @@ select.form-input option{background:var(--surface2)}
             <button class="btn btn-success" onclick="adicionarFichasAdmin()" style="margin-bottom:2px">+ Adicionar</button>
           </div>
           <div id="admin-pool-preview" style="padding:0 20px 16px;font-size:12px;color:var(--muted);min-height:20px"></div>
+          <div id="admin-atendimentos-preview" style="padding:0 20px 16px;font-size:12px;border-top:1px solid var(--border);display:none">
+            <div class="admin-mes-label" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Atendimentos que serão registrados — mês atual</div>
+            <div id="admin-atendimentos-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          </div>
         </div>
         <div class="table-wrap" style="margin-bottom:20px">
           <div class="table-header"><span class="table-label">Remover fichas por barbeiro</span></div>
@@ -540,6 +550,19 @@ async function renderAdminPanel() {
   const sel = document.getElementById('admin-barbeiro');
   sel.innerHTML = '<option value="">Selecionar...</option>';
   BARBERS.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
+
+  // Populate client selector in admin
+  const cliSel = document.getElementById('admin-cliente-manual');
+  if(cliSel) {
+    const curCli = cliSel.value;
+    cliSel.innerHTML = '<option value="">🎲 Sortear do pool automaticamente</option>';
+    allClientes.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.nome; o.textContent = c.nome; cliSel.appendChild(o);
+    });
+    if(curCli) cliSel.value = curCli;
+  }
+
   const fichasRows = await loadFichas();
   const fichasMap = {};
   BARBERS.forEach(b => fichasMap[b] = 0);
@@ -564,25 +587,78 @@ async function renderAdminPanel() {
   atualizarPoolPreview();
 }
 
+function gerarAtendimentosAleatorios(qtd) {
+  const now = new Date();
+  const ano = now.getFullYear();
+  const mes = now.getMonth();
+  const hoje = now.getDate();
+  const atendimentos = [];
+  const horas = ['08','09','10','11','12','13','14','15','16','17','18','19'];
+  const minutos = ['00','15','30','45'];
+  for(let i=0; i<qtd; i++) {
+    const dia = Math.floor(Math.random() * hoje) + 1;
+    const dataObj = new Date(ano, mes, dia);
+    const dataStr = dataObj.toISOString().split('T')[0];
+    const hora = horas[Math.floor(Math.random()*horas.length)] + ':' + minutos[Math.floor(Math.random()*minutos.length)];
+    atendimentos.push({data: dataStr, hora});
+  }
+  return atendimentos;
+}
+
 function atualizarPoolPreview() {
   const pool = document.getElementById('admin-pool')?.value;
+  const clienteManual = document.getElementById('admin-cliente-manual')?.value;
+  const qtd = parseInt(document.getElementById('admin-qtd')?.value) || 1;
   const prev = document.getElementById('admin-pool-preview');
+  const atendPrev = document.getElementById('admin-atendimentos-preview');
+  const atendLista = document.getElementById('admin-atendimentos-lista');
   if(!prev) return;
-  if(!pool) { prev.textContent = ''; return; }
-  const candidatos = allPlanos.filter(p => p.plano === pool && p.status === 'ativo');
-  if(!candidatos.length) {
-    prev.innerHTML = '<span style="color:var(--danger)">Nenhum cliente ativo neste pool.</span>';
+
+  if(!pool && !clienteManual) {
+    prev.textContent = '';
+    if(atendPrev) atendPrev.style.display = 'none';
     return;
   }
-  const sorteado = candidatos[Math.floor(Math.random()*candidatos.length)];
-  prev.innerHTML = `Cliente sorteado: <strong style="color:var(--accent)">${sorteado.cliente}</strong> — o lançamento será registrado para ele. <button class="btn btn-ghost" style="font-size:11px;padding:2px 8px;margin-left:8px" onclick="atualizarPoolPreview()">🔀 Ressortear</button>`;
-  prev.dataset.cliente = sorteado.cliente;
+
+  let clienteNome = '';
+  if(clienteManual) {
+    clienteNome = clienteManual;
+    prev.innerHTML = `Cliente selecionado: <strong style="color:var(--accent)">${clienteNome}</strong>`;
+  } else if(pool) {
+    const candidatos = allPlanos.filter(p => p.plano === pool && p.status === 'ativo');
+    if(!candidatos.length) {
+      prev.innerHTML = '<span style="color:var(--danger)">Nenhum cliente ativo neste pool.</span>';
+      if(atendPrev) atendPrev.style.display = 'none';
+      return;
+    }
+    const sorteado = candidatos[Math.floor(Math.random()*candidatos.length)];
+    clienteNome = sorteado.cliente;
+    prev.innerHTML = `🎲 Sorteado: <strong style="color:var(--accent)">${clienteNome}</strong> <button class="btn btn-ghost" style="font-size:11px;padding:2px 8px;margin-left:8px" onclick="atualizarPoolPreview()">🔀 Ressortear</button>`;
+  }
+  prev.dataset.cliente = clienteNome;
+
+  if(pool && atendPrev && atendLista) {
+    const atends = gerarAtendimentosAleatorios(qtd);
+    prev.dataset.atendimentos = JSON.stringify(atends);
+    const now = new Date();
+    const mesNome = now.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+    atendLista.innerHTML = atends.map(a => {
+      const d = new Date(a.data+'T12:00').toLocaleDateString('pt-BR');
+      return `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text)">${d} às ${a.hora}</span>`;
+    }).join('');
+    atendPrev.querySelector('.admin-mes-label') && (atendPrev.querySelector('.admin-mes-label').textContent = 'Atendimentos que serão registrados — '+mesNome);
+    atendPrev.style.display = 'block';
+  } else if(atendPrev) {
+    atendPrev.style.display = 'none';
+    prev.dataset.atendimentos = '';
+  }
 }
 
 async function adicionarFichasAdmin() {
   const barbeiro = document.getElementById('admin-barbeiro').value;
   const qtd = parseInt(document.getElementById('admin-qtd').value)||0;
   const pool = document.getElementById('admin-pool').value;
+  const clienteManual = document.getElementById('admin-cliente-manual').value;
   if(!barbeiro){ showToast('Selecione um barbeiro', true); return; }
   if(qtd < 1){ showToast('Quantidade deve ser ao menos 1', true); return; }
 
@@ -592,26 +668,35 @@ async function adicionarFichasAdmin() {
   const {error} = await sb.from('fichas').upsert([{barbeiro, fichas:novasFichas}], {onConflict:'barbeiro'});
   if(error){ showToast('Erro: '+error.message, true); return; }
 
-  // If pool selected, register lancamento for random client
+  // Register lancamentos (one per ficha) if pool or client selected
   if(pool) {
     const prev = document.getElementById('admin-pool-preview');
     const clienteNome = prev?.dataset?.cliente;
     if(clienteNome) {
-      const now = new Date();
-      const hora = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-      const data = now.toISOString().split('T')[0];
-      await sb.from('lancamentos').insert([{
+      // Generate one atendimento per ficha with random date/time in current month
+      let atends = [];
+      try { atends = JSON.parse(prev.dataset.atendimentos||'[]'); } catch(e){}
+      if(!atends.length) atends = gerarAtendimentosAleatorios(qtd);
+      // Ensure we have exactly qtd atendimentos
+      while(atends.length < qtd) atends.push(...gerarAtendimentosAleatorios(qtd - atends.length));
+      atends = atends.slice(0, qtd);
+
+      const inserts = atends.map(a => ({
         cliente: clienteNome, barbeiro, servico: pool,
-        pagamento: 'Admin', hora, data_atendimento: data
-      }]);
+        pagamento: 'Admin', hora: a.hora, data_atendimento: a.data
+      }));
+      await sb.from('lancamentos').insert(inserts);
       await loadLancamentos();
     }
   }
 
-  showToast(qtd+' ficha(s) adicionada(s) para '+barbeiro+(pool?' + lançamento registrado!':'!'));
+  showToast(qtd+' ficha(s) adicionada(s) para '+barbeiro+(pool?' + '+qtd+' atendimento(s) registrado(s)!':'!'));
   document.getElementById('admin-qtd').value = '1';
   document.getElementById('admin-motivo').value = '';
   document.getElementById('admin-pool').value = '';
+  document.getElementById('admin-cliente-manual').value = '';
+  document.getElementById('admin-pool-preview').textContent = '';
+  document.getElementById('admin-atendimentos-preview').style.display = 'none';
   await renderAdminPanel();
 }
 
@@ -832,8 +917,12 @@ function populateMesFiltro() {
     const d = l.data_atendimento || (l.created_at ? l.created_at.split('T')[0] : null);
     if(d) meses.add(d.substring(0,7));
   });
+  // Always include current month
+  const now = new Date();
+  const currentMes = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  meses.add(currentMes);
   const sorted = Array.from(meses).sort().reverse();
-  const cur = sel.value;
+  const cur = sel.value || currentMes; // default to current month
   sel.innerHTML = '<option value="">Todo o período</option>';
   sorted.forEach(m => {
     const [y,mo] = m.split('-');
@@ -842,7 +931,7 @@ function populateMesFiltro() {
     opt.value = m; opt.textContent = label.charAt(0).toUpperCase()+label.slice(1);
     sel.appendChild(opt);
   });
-  if(cur) sel.value = cur;
+  sel.value = cur;
 }
 
 async function renderFichas() {
