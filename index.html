@@ -152,6 +152,10 @@ select.form-input option{background:var(--surface2)}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2"/></svg>
       Fichas & Comissões
     </button>
+    <button class="nav-item" onclick="showSection('admin')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="12" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/><circle cx="8" cy="11" r="1.2" fill="currentColor" stroke="none"/></svg>
+      Admin
+    </button>
   </nav>
 </div>
 
@@ -269,7 +273,7 @@ select.form-input option{background:var(--surface2)}
         <button class="btn btn-primary" onclick="openModal('modal-cliente')">+ Novo cliente</button>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Nome</th><th>Telefone</th><th>Plano ativo</th><th>Cadastro</th><th>Atendimentos</th><th></th><th></th></tr></thead>
+        <table><thead><tr><th>Nome</th><th>Telefone</th><th>Plano ativo</th><th>Cadastro</th><th>Atendimentos</th><th></th></tr></thead>
         <tbody id="clientes-table"><tr><td colspan="6" class="loading-row">Carregando...</td></tr></tbody></table>
       </div>
     </div>
@@ -291,6 +295,54 @@ select.form-input option{background:var(--surface2)}
       <div style="font-size:12px;color:var(--muted);line-height:1.9">
         <strong style="color:var(--text)">Sistema poker de fichas:</strong><br>
         Cada atendimento gera 1 ficha ao barbeiro responsável. O pool de comissão (50% do total arrecadado) é dividido proporcionalmente às fichas de cada barbeiro.
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="section" id="section-admin" style="display:none">
+      <div id="admin-lock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px;gap:20px">
+        <div style="background:var(--surface2);border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:28px">🔒</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text)">Área restrita</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:-10px">Digite a senha para acessar o painel admin</div>
+        <div style="display:flex;gap:10px;width:100%;max-width:320px">
+          <input type="password" class="form-input" id="admin-senha-input" placeholder="Senha" onkeydown="if(event.key==='Enter')verificarSenhaAdmin()" style="flex:1">
+          <button class="btn btn-primary" onclick="verificarSenhaAdmin()">Entrar</button>
+        </div>
+        <div id="admin-senha-erro" style="color:var(--danger);font-size:12px;display:none">Senha incorreta.</div>
+      </div>
+      <div id="admin-panel" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+          <div>
+            <div style="font-size:18px;font-weight:600">Painel Admin</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">Ajuste manual de fichas por barbeiro</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px" onclick="bloquearAdmin()">🔒 Bloquear</button>
+        </div>
+        <div class="grid-3" id="admin-fichas-cards" style="margin-bottom:24px"></div>
+        <div class="table-wrap">
+          <div class="table-header"><span class="table-label">Adicionar fichas manualmente</span></div>
+          <div style="padding:20px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
+            <div class="form-group" style="min-width:160px;flex:1">
+              <label class="form-label">Barbeiro</label>
+              <select class="form-input" id="admin-barbeiro">
+                <option value="">Selecionar...</option>
+              </select>
+            </div>
+            <div class="form-group" style="width:120px">
+              <label class="form-label">Fichas a adicionar</label>
+              <input type="number" class="form-input" id="admin-qtd" min="1" max="50" value="1" placeholder="1">
+            </div>
+            <div class="form-group" style="width:180px">
+              <label class="form-label">Motivo (opcional)</label>
+              <input type="text" class="form-input" id="admin-motivo" placeholder="ex: ajuste manual">
+            </div>
+            <button class="btn btn-success" onclick="adicionarFichasAdmin()" style="margin-bottom:2px">+ Adicionar fichas</button>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.9">
+          <strong style="color:var(--text)">Atenção:</strong> fichas adicionadas aqui não geram lançamento de atendimento. Use apenas para correções e ajustes pontuais.
+        </div>
       </div>
     </div>
 
@@ -391,6 +443,63 @@ let selectedPayment = '';
 let allClientes = [];
 let allPlanos = [];
 let allLancamentos = [];
+
+// ─── ADMIN ───
+const ADMIN_SENHA = '@Radd0000';
+let adminDesbloqueado = false;
+
+function verificarSenhaAdmin() {
+  const v = document.getElementById('admin-senha-input').value;
+  const erro = document.getElementById('admin-senha-erro');
+  if(v === ADMIN_SENHA) {
+    adminDesbloqueado = true;
+    document.getElementById('admin-lock').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    document.getElementById('admin-senha-input').value = '';
+    erro.style.display = 'none';
+    renderAdminPanel();
+  } else {
+    erro.style.display = 'block';
+    document.getElementById('admin-senha-input').value = '';
+  }
+}
+
+function bloquearAdmin() {
+  adminDesbloqueado = false;
+  document.getElementById('admin-lock').style.display = 'flex';
+  document.getElementById('admin-panel').style.display = 'none';
+}
+
+async function renderAdminPanel() {
+  const sel = document.getElementById('admin-barbeiro');
+  sel.innerHTML = '<option value="">Selecionar...</option>';
+  BARBERS.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
+  const fichasRows = await loadFichas();
+  const fichasMap = {};
+  BARBERS.forEach(b => fichasMap[b] = 0);
+  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
+  const cards = document.getElementById('admin-fichas-cards');
+  if(cards) cards.innerHTML = BARBERS.map((b,i) => `
+    <div class="card" style="border-left:3px solid ${BARBER_COLORS[i]}">
+      <div class="card-title">${b}</div>
+      <div class="card-value">${fichasMap[b]||0} <span style="font-size:14px;color:var(--muted)">fichas</span></div>
+    </div>`).join('');
+}
+
+async function adicionarFichasAdmin() {
+  const barbeiro = document.getElementById('admin-barbeiro').value;
+  const qtd = parseInt(document.getElementById('admin-qtd').value)||0;
+  if(!barbeiro){ showToast('Selecione um barbeiro', true); return; }
+  if(qtd < 1){ showToast('Quantidade deve ser ao menos 1', true); return; }
+  const {data:fichaRow} = await sb.from('fichas').select('fichas').eq('barbeiro', barbeiro).single();
+  const novasFichas = (fichaRow?.fichas||0) + qtd;
+  const {error} = await sb.from('fichas').upsert([{barbeiro, fichas:novasFichas}], {onConflict:'barbeiro'});
+  if(error){ showToast('Erro: '+error.message, true); return; }
+  showToast(qtd+' ficha(s) adicionada(s) para '+barbeiro+'!');
+  document.getElementById('admin-qtd').value = '1';
+  document.getElementById('admin-motivo').value = '';
+  await renderAdminPanel();
+}
 
 // ─── INIT ───────────────────────────────────────────────
 async function init() {
@@ -524,7 +633,7 @@ function renderLancamentos() {
 function renderClientes(filter='') {
   const tbody = document.getElementById('clientes-table');
   const list = filter ? allClientes.filter(c=>c.nome.toLowerCase().includes(filter.toLowerCase())||c.telefone.includes(filter)) : allClientes;
-  if(!list.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Nenhum cliente encontrado</td></tr>'; return; }
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">Nenhum cliente encontrado</td></tr>'; return; }
   tbody.innerHTML = list.map(c=>{
     const plano = allPlanos.find(p=>p.cliente_id===c.id&&p.status==='ativo');
     const atend = allLancamentos.filter(l=>l.cliente===c.nome).length;
@@ -535,7 +644,6 @@ function renderClientes(filter='') {
       <td style="color:var(--muted)">${fmtDate(c.created_at)}</td>
       <td>${atend}</td>
       <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="ativarParaCliente('${c.id}','${c.nome}')">+ Plano</button></td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirCliente('${c.id}','${c.nome}')">🗑</button></td>
     </tr>`;}).join('');
 }
 
@@ -640,13 +748,6 @@ async function salvarCliente() {
   const nome = document.getElementById('nc-nome').value.trim();
   const telefone = document.getElementById('nc-tel').value.trim();
   if(!nome||!telefone){ showToast('Nome e telefone obrigatórios', true); return; }
-  const nomeNorm = nome.toLowerCase();
-  const telNorm = telefone.replace(/\D/g,'');
-  const dupNome = allClientes.find(c => c.nome.toLowerCase() === nomeNorm);
-  const dupTel  = allClientes.find(c => c.telefone.replace(/\D/g,'') === telNorm && telNorm.length >= 8);
-  if(dupNome && dupTel){ showToast('Já existe um cliente com esse nome e telefone: '+dupNome.nome, true); return; }
-  if(dupNome){ showToast('Já existe um cliente com o nome "'+dupNome.nome+'" cadastrado.', true); return; }
-  if(dupTel){ showToast('O telefone '+telefone+' já está cadastrado para '+dupTel.nome+'.', true); return; }
   const btn = document.getElementById('btn-salvar-cliente');
   btn.textContent = 'Salvando...'; btn.disabled = true;
   const {error} = await sb.from('clientes').insert([{nome, telefone, email:document.getElementById('nc-email').value, nascimento:document.getElementById('nc-nasc').value||null}]);
@@ -708,18 +809,6 @@ async function excluirLancamento(id, barbeiro) {
   renderDashboard();
 }
 
-async function excluirCliente(id, nome) {
-  if(!confirm('Excluir o cliente '+nome+'? Isso também removerá os planos e lançamentos vinculados a ele.')) return;
-  await sb.from('planos').delete().eq('cliente_id', id);
-  await sb.from('lancamentos').delete().eq('cliente', nome);
-  const {error} = await sb.from('clientes').delete().eq('id', id);
-  if(error){ showToast('Erro ao excluir: '+error.message, true); return; }
-  showToast('Cliente '+nome+' excluído.');
-  await Promise.all([loadClientes(), loadPlanos(), loadLancamentos()]);
-  renderClientes(document.getElementById('search-cliente')?.value||'');
-  renderDashboard();
-}
-
 function ativarParaCliente(id, nome) {
   openModal('modal-ativar');
   setTimeout(()=>{ const sel = document.getElementById('ap-cliente'); sel.value = nome; }, 100);
@@ -737,6 +826,10 @@ function showSection(id) {
   if(id==='planos') renderPlanos();
   if(id==='barbeiros') renderBarbeiros();
   if(id==='fichas') renderFichas();
+  if(id==='admin') {
+    if(adminDesbloqueado) { document.getElementById('admin-lock').style.display='none'; document.getElementById('admin-panel').style.display='block'; renderAdminPanel(); }
+    else { document.getElementById('admin-lock').style.display='flex'; document.getElementById('admin-panel').style.display='none'; }
+  }
   if(id==='dashboard') renderDashboard();
   if(id==='lancamentos') renderLancamentos();
 }
