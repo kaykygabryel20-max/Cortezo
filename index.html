@@ -205,7 +205,7 @@ select.form-input option{background:var(--surface2)}
             </select>
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row full">
           <div class="form-group">
             <label class="form-label">Serviço</label>
             <select class="form-input" id="lan-servico" onchange="updateDuracao()">
@@ -213,16 +213,6 @@ select.form-input option{background:var(--surface2)}
               <option value="cabelo">Cabelo — 30 min</option>
               <option value="barba">Barba — 30 min</option>
               <option value="cabelo_barba">Cabelo + Barba — 60 min</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Forma de pagamento</label>
-            <select class="form-input" id="lan-pagamento">
-              <option value="">Selecionar...</option>
-              <option value="PIX">PIX</option>
-              <option value="Crédito">Crédito</option>
-              <option value="Débito">Débito</option>
-              <option value="Dinheiro">Dinheiro</option>
             </select>
           </div>
         </div>
@@ -248,8 +238,8 @@ select.form-input option{background:var(--surface2)}
       </div>
       <div class="table-wrap">
         <div class="table-header"><span class="table-label">Histórico de atendimentos</span></div>
-        <table><thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Serviço</th><th>Barbeiro</th><th>Pagamento</th><th>Duração</th><th>Ficha</th><th></th></tr></thead>
-        <tbody id="hist-lancamentos"><tr><td colspan="9" class="loading-row">Carregando...</td></tr></tbody></table>
+        <table><thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Serviço</th><th>Barbeiro</th><th>Duração</th><th>Ficha</th><th></th></tr></thead>
+        <tbody id="hist-lancamentos"><tr><td colspan="8" class="loading-row">Carregando...</td></tr></tbody></table>
       </div>
     </div>
 
@@ -563,20 +553,31 @@ async function renderAdminPanel() {
     if(curCli) cliSel.value = curCli;
   }
 
-  const fichasRows = await loadFichas();
+  // Fichas do mês atual = lançamentos do mês atual (conectado)
+  const nowAdmin = new Date();
+  const mesAdmin = nowAdmin.getFullYear()+'-'+String(nowAdmin.getMonth()+1).padStart(2,'0');
   const fichasMap = {};
   BARBERS.forEach(b => fichasMap[b] = 0);
-  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
+  allLancamentos.filter(l=>{
+    const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
+    return d.startsWith(mesAdmin);
+  }).forEach(l=>{ if(fichasMap[l.barbeiro]!==undefined) fichasMap[l.barbeiro]++; });
+  const mesAdminLabel = nowAdmin.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   const cards = document.getElementById('admin-fichas-cards');
   if(cards) cards.innerHTML = BARBERS.map((b,i) => `
     <div class="card" style="border-left:3px solid ${BARBER_COLORS[i]}">
       <div class="card-title">${b}</div>
       <div class="card-value">${fichasMap[b]||0} <span style="font-size:14px;color:var(--muted)">fichas</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${mesAdminLabel}</div>
     </div>`).join('');
-  // Render excluir table
+  // Render excluir table — mostra fichas acumuladas (tabela fichas) para ajuste manual
+  const fichasRows = await loadFichas();
+  const fichasRawMap = {};
+  BARBERS.forEach(b => fichasRawMap[b] = 0);
+  fichasRows.forEach(f => { if(fichasRawMap[f.barbeiro]!==undefined) fichasRawMap[f.barbeiro] = f.fichas; });
   const etbody = document.getElementById('admin-excluir-table');
   if(etbody) etbody.innerHTML = BARBERS.map((b,i) => {
-    const f = fichasMap[b]||0;
+    const f = fichasRawMap[b]||0;
     return `<tr>
       <td style="font-weight:500;color:${BARBER_COLORS[i]}">${b}</td>
       <td>${f}</td>
@@ -778,12 +779,17 @@ async function loadFichas() {
 
 // ─── RENDER ──────────────────────────────────────────────
 function renderDashboard() {
-  const totalPool = allPlanos.reduce((s,p) => s + (PLAN_PRICES[p.plano]||0), 0);
-  const fichasCount = allLancamentos.length;
+  const now = new Date();
+  const mesCurrent = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const totalPool = calcPoolDoMes(mesCurrent);
+  const fichasCount = allLancamentos.filter(l=>{
+    const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
+    return d.startsWith(mesCurrent);
+  }).length;
   document.getElementById('d-clientes').textContent = allClientes.length;
   document.getElementById('d-planos').textContent = allPlanos.filter(p=>p.status==='ativo').length;
   document.getElementById('d-pool').textContent = 'R$ ' + totalPool.toFixed(2).replace('.',',');
-  document.getElementById('d-fichas').textContent = fichasCount;
+  document.getElementById('d-fichas').textContent = fichasCount+' (mês)';
   renderPoolCards('pool-cards-dash');
   const tbody = document.getElementById('dash-lancamentos');
   if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="5" class="loading-row" style="color:var(--muted)">Nenhum atendimento registrado</td></tr>'; return; }
@@ -799,8 +805,25 @@ function renderDashboard() {
 
 function renderPoolCards(id) {
   const c = document.getElementById(id); if(!c) return;
+  const nowPC = new Date();
+  const mesPC = nowPC.getFullYear()+'-'+String(nowPC.getMonth()+1).padStart(2,'0');
+  // Pool por tipo com pro-rata do mês atual
   const pools = {cabelo:0, barba:0, cabelo_barba:0};
-  allPlanos.forEach(p => { if(pools[p.plano]!==undefined) pools[p.plano] += PLAN_PRICES[p.plano]; });
+  allPlanos.forEach(p => {
+    const preco = PLAN_PRICES[p.plano]||0;
+    if(pools[p.plano]===undefined) return;
+    if(!p.data_ativacao) { pools[p.plano] += preco; return; }
+    const ativacao = new Date(p.data_ativacao+'T12:00');
+    const mesAtiv = ativacao.getFullYear()*100+(ativacao.getMonth()+1);
+    const mesPCNum = nowPC.getFullYear()*100+(nowPC.getMonth()+1);
+    const ultimoDia = new Date(nowPC.getFullYear(), nowPC.getMonth()+1, 0).getDate();
+    if(mesAtiv === mesPCNum) {
+      const diasRestantes = ultimoDia - ativacao.getDate() + 1;
+      pools[p.plano] += preco * (diasRestantes / ultimoDia);
+    } else {
+      pools[p.plano] += preco;
+    }
+  });
   const total = Object.values(pools).reduce((a,b)=>a+b,0);
   const cfg = [
     {key:'cabelo', name:'Pool Cabelo', price:'79,90', color:'var(--pool-hair)', badge:'hair'},
@@ -827,7 +850,7 @@ function renderPoolCards(id) {
 
 function renderLancamentos() {
   const tbody = document.getElementById('hist-lancamentos');
-  if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px">Nenhum atendimento ainda</td></tr>'; return; }
+  if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Nenhum atendimento ainda</td></tr>'; return; }
   tbody.innerHTML = allLancamentos.map(l=>{
     const bi = BARBERS.indexOf(l.barbeiro);
     const col = BARBER_COLORS[bi]||'#888';
@@ -839,7 +862,6 @@ function renderLancamentos() {
       <td>${l.cliente}</td>
       <td>${planBadge(l.servico)}</td>
       <td>${l.barbeiro}</td>
-      <td><span class="badge badge-info" style="font-size:10px">${l.pagamento||'—'}</span></td>
       <td>${PLAN_DUR[l.servico]||'—'}</td>
       <td><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:${col};text-align:center;line-height:22px;font-size:10px;color:#111;font-weight:500">✦</span></td>
       <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirLancamento('${l.id}','${l.barbeiro}')">🗑</button></td>
@@ -887,8 +909,17 @@ async function renderBarbeiros() {
   const fichasMap = {};
   BARBERS.forEach(b => fichasMap[b] = 0);
   fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
+  // Fichas = contagem de lançamentos no mês atual (fichas conectadas aos lançamentos)
+  const now = new Date();
+  const mesCurrent = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const lanMesAtual = allLancamentos.filter(l => {
+    const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
+    return d.startsWith(mesCurrent);
+  });
+  BARBERS.forEach(b => fichasMap[b] = 0);
+  lanMesAtual.forEach(l => { if(fichasMap[l.barbeiro]!==undefined) fichasMap[l.barbeiro]++; });
   const totalFichas = Object.values(fichasMap).reduce((a,b)=>a+b,0);
-  const totalPool = allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0)*0.5;
+  const totalPool = calcPoolDoMes(mesCurrent)*0.5;
   const c = document.getElementById('barber-cards');
   c.innerHTML = BARBERS.map((b,i)=>{
     const fichas = fichasMap[b]||0;
@@ -938,27 +969,23 @@ async function renderFichas() {
   populateMesFiltro();
   const mesFiltro = document.getElementById('fichas-mes-filtro')?.value || '';
 
-  // FONTE DE VERDADE: tabela fichas para totais reais
-  const fichasRows = await loadFichas();
-  const fichasMap = {};
-  BARBERS.forEach(b => fichasMap[b] = 0);
-  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
+  // FONTE DE VERDADE: lançamentos. Fichas = 1 por lançamento, filtrado pelo período.
+  const lansFiltrados = mesFiltro
+    ? allLancamentos.filter(l => {
+        const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
+        return d.startsWith(mesFiltro);
+      })
+    : allLancamentos;
 
-  // Para visualização mensal, conta lancamentos do período
-  let displayMap = fichasMap;
-  if(mesFiltro) {
-    const lanMap = {};
-    BARBERS.forEach(b => lanMap[b] = 0);
-    allLancamentos.filter(l => {
-      const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
-      return d.startsWith(mesFiltro);
-    }).forEach(l => { if(lanMap[l.barbeiro]!==undefined) lanMap[l.barbeiro]++; });
-    displayMap = lanMap;
-  }
+  const displayMap = {};
+  BARBERS.forEach(b => displayMap[b] = 0);
+  lansFiltrados.forEach(l => { if(displayMap[l.barbeiro]!==undefined) displayMap[l.barbeiro]++; });
 
   const totalDisplay = Object.values(displayMap).reduce((a,b)=>a+b,0);
-  const totalPool = allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
-  const commPool = totalPool * 0.5;
+
+  // Pool do mês: soma proporcional dos planos ativos considerando pro-rata de ativação
+  const commPool = calcPoolDoMes(mesFiltro) * 0.5;
+
   let periodoLabel = 'Todo o período';
   if(mesFiltro) {
     const [y,mo] = mesFiltro.split('-');
@@ -969,7 +996,7 @@ async function renderFichas() {
   if(badge) badge.textContent = mesFiltro ? '— '+periodoLabel : '';
   const summary = document.getElementById('fichas-summary');
   if(summary) summary.innerHTML = `
-    <div class="card"><div class="card-title">${mesFiltro?'Atend. no mês':'Fichas (tabela)'}</div><div class="card-value">${totalDisplay}</div></div>
+    <div class="card"><div class="card-title">Fichas no período</div><div class="card-value">${totalDisplay}</div></div>
     <div class="card"><div class="card-title">Pool comissão (50%)</div><div class="card-value" style="color:var(--success)">R$ ${commPool.toFixed(2).replace('.',',')}</div></div>
     <div class="card"><div class="card-title">Período</div><div class="card-value" style="font-size:15px;letter-spacing:0">${periodoLabel}</div></div>`;
   const tbody = document.getElementById('fichas-table');
@@ -988,16 +1015,51 @@ async function renderFichas() {
     </tr>`;}).join('');
 }
 
+// Calcula o pool de comissão do mês considerando pro-rata de planos ativados no meio do mês.
+// Plano ativado dia X: valor * (dias_restantes_no_mes / dias_do_mes) vai pro mês atual,
+// e o restante vai pro mês seguinte. Nos meses subsequentes à ativação conta 100%.
+function calcPoolDoMes(mesFiltro) {
+  if(!mesFiltro) {
+    // sem filtro: soma tudo sem pro-rata
+    return allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
+  }
+  const [fy, fm] = mesFiltro.split('-').map(Number);
+  const primeiroDiaMes = new Date(fy, fm-1, 1);
+  const ultimoDiaMes = new Date(fy, fm, 0); // último dia do mês
+  const diasNoMes = ultimoDiaMes.getDate();
+  let total = 0;
+  allPlanos.forEach(p => {
+    const preco = PLAN_PRICES[p.plano]||0;
+    if(!p.data_ativacao) return;
+    const ativacao = new Date(p.data_ativacao+'T12:00');
+    const renovacao = p.data_renovacao ? new Date(p.data_renovacao+'T12:00') : null;
+    // Verifica se o plano está ativo no mês filtrado
+    if(ativacao > ultimoDiaMes) return; // ainda não ativado nesse mês
+    if(renovacao && renovacao < primeiroDiaMes) return; // já expirou antes desse mês
+    const mesAtivacao = ativacao.getFullYear()*100 + (ativacao.getMonth()+1);
+    const mesFiltNum = fy*100 + fm;
+    if(mesAtivacao === mesFiltNum) {
+      // Ativado no meio deste mês: pro-rata proporcional ao dias restantes
+      const diaAtivacao = ativacao.getDate();
+      const diasRestantes = diasNoMes - diaAtivacao + 1;
+      total += preco * (diasRestantes / diasNoMes);
+    } else {
+      // Plano já estava ativo antes deste mês: conta integral
+      total += preco;
+    }
+  });
+  return total;
+}
+
 // ─── ACTIONS ─────────────────────────────────────────────
 async function registrarLancamento() {
   const cliente = document.getElementById('lan-cliente').value;
   const barbeiro = document.getElementById('lan-barbeiro').value;
   const servico = document.getElementById('lan-servico').value;
-  const pagamento = document.getElementById('lan-pagamento').value;
   const hora = document.getElementById('lan-hora').value;
   const data = document.getElementById('lan-data').value;
-  if(!cliente||!barbeiro||!servico||!pagamento||!hora||!data){ showToast('Preencha todos os campos', true); return; }
-  const {error} = await sb.from('lancamentos').insert([{cliente, barbeiro, servico, pagamento, hora, data_atendimento: data}]);
+  if(!cliente||!barbeiro||!servico||!hora||!data){ showToast('Preencha todos os campos', true); return; }
+  const {error} = await sb.from('lancamentos').insert([{cliente, barbeiro, servico, hora, data_atendimento: data}]);
   if(error){ showToast('Erro: '+error.message, true); return; }
   // Upsert ficha
   const {data:fichaRow} = await sb.from('fichas').select('fichas').eq('barbeiro', barbeiro).single();
@@ -1007,7 +1069,7 @@ async function registrarLancamento() {
   await loadLancamentos();
   renderLancamentos();
   renderDashboard();
-  ['lan-cliente','lan-barbeiro','lan-servico','lan-pagamento'].forEach(i => document.getElementById(i).value='');
+  ['lan-cliente','lan-barbeiro','lan-servico'].forEach(i => document.getElementById(i).value='');
   document.getElementById('lan-duracao').value='—';
   const now = new Date();
   document.getElementById('lan-hora').value = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
