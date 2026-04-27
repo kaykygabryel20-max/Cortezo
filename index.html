@@ -326,29 +326,44 @@ select.form-input option{background:var(--surface2)}
           <button class="btn btn-ghost" style="font-size:12px" onclick="bloquearAdmin()">🔒 Bloquear</button>
         </div>
         <div class="grid-3" id="admin-fichas-cards" style="margin-bottom:24px"></div>
-        <div class="table-wrap">
+        <div class="table-wrap" style="margin-bottom:20px">
           <div class="table-header"><span class="table-label">Adicionar fichas manualmente</span></div>
           <div style="padding:20px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
-            <div class="form-group" style="min-width:160px;flex:1">
+            <div class="form-group" style="min-width:140px;flex:1">
               <label class="form-label">Barbeiro</label>
               <select class="form-input" id="admin-barbeiro">
                 <option value="">Selecionar...</option>
               </select>
             </div>
-            <div class="form-group" style="width:120px">
-              <label class="form-label">Fichas a adicionar</label>
-              <input type="number" class="form-input" id="admin-qtd" min="1" max="50" value="1" placeholder="1">
+            <div class="form-group" style="min-width:160px;flex:1">
+              <label class="form-label">Pool (registrar lançamento)</label>
+              <select class="form-input" id="admin-pool" onchange="atualizarPoolPreview()">
+                <option value="">Sem pool — só ficha</option>
+                <option value="cabelo">Cabelo</option>
+                <option value="barba">Barba</option>
+                <option value="cabelo_barba">Cabelo + Barba</option>
+              </select>
             </div>
-            <div class="form-group" style="width:180px">
+            <div class="form-group" style="width:100px">
+              <label class="form-label">Fichas</label>
+              <input type="number" class="form-input" id="admin-qtd" min="1" max="50" value="1">
+            </div>
+            <div class="form-group" style="width:160px">
               <label class="form-label">Motivo (opcional)</label>
-              <input type="text" class="form-input" id="admin-motivo" placeholder="ex: ajuste manual">
+              <input type="text" class="form-input" id="admin-motivo" placeholder="ex: ajuste">
             </div>
-            <button class="btn btn-success" onclick="adicionarFichasAdmin()" style="margin-bottom:2px">+ Adicionar fichas</button>
+            <button class="btn btn-success" onclick="adicionarFichasAdmin()" style="margin-bottom:2px">+ Adicionar</button>
           </div>
+          <div id="admin-pool-preview" style="padding:0 20px 16px;font-size:12px;color:var(--muted);min-height:20px"></div>
+        </div>
+        <div class="table-wrap" style="margin-bottom:20px">
+          <div class="table-header"><span class="table-label">Remover fichas por barbeiro</span></div>
+          <table><thead><tr><th>Barbeiro</th><th>Fichas atuais</th><th>Remover 1</th><th>Zerar tudo</th></tr></thead>
+          <tbody id="admin-excluir-table"></tbody></table>
         </div>
         <div class="sep"></div>
         <div style="font-size:12px;color:var(--muted);line-height:1.9">
-          <strong style="color:var(--text)">Atenção:</strong> fichas adicionadas aqui não geram lançamento de atendimento. Use apenas para correções e ajustes pontuais.
+          <strong style="color:var(--text)">Atenção:</strong> ajustes feitos aqui são diretos na tabela de fichas. Use para correções pontuais.
         </div>
       </div>
     </div>
@@ -535,20 +550,85 @@ async function renderAdminPanel() {
       <div class="card-title">${b}</div>
       <div class="card-value">${fichasMap[b]||0} <span style="font-size:14px;color:var(--muted)">fichas</span></div>
     </div>`).join('');
+  // Render excluir table
+  const etbody = document.getElementById('admin-excluir-table');
+  if(etbody) etbody.innerHTML = BARBERS.map((b,i) => {
+    const f = fichasMap[b]||0;
+    return `<tr>
+      <td style="font-weight:500;color:${BARBER_COLORS[i]}">${b}</td>
+      <td>${f}</td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--danger);border-color:rgba(224,85,85,0.3)" ${f===0?'disabled':''} onclick="removerFichaAdmin('${b}',${f})">−1 ficha</button></td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--danger);border-color:rgba(224,85,85,0.3)" ${f===0?'disabled':''} onclick="zerarFichasAdmin('${b}')">Zerar</button></td>
+    </tr>`;
+  }).join('');
+  atualizarPoolPreview();
+}
+
+function atualizarPoolPreview() {
+  const pool = document.getElementById('admin-pool')?.value;
+  const prev = document.getElementById('admin-pool-preview');
+  if(!prev) return;
+  if(!pool) { prev.textContent = ''; return; }
+  const candidatos = allPlanos.filter(p => p.plano === pool && p.status === 'ativo');
+  if(!candidatos.length) {
+    prev.innerHTML = '<span style="color:var(--danger)">Nenhum cliente ativo neste pool.</span>';
+    return;
+  }
+  const sorteado = candidatos[Math.floor(Math.random()*candidatos.length)];
+  prev.innerHTML = `Cliente sorteado: <strong style="color:var(--accent)">${sorteado.cliente}</strong> — o lançamento será registrado para ele. <button class="btn btn-ghost" style="font-size:11px;padding:2px 8px;margin-left:8px" onclick="atualizarPoolPreview()">🔀 Ressortear</button>`;
+  prev.dataset.cliente = sorteado.cliente;
 }
 
 async function adicionarFichasAdmin() {
   const barbeiro = document.getElementById('admin-barbeiro').value;
   const qtd = parseInt(document.getElementById('admin-qtd').value)||0;
+  const pool = document.getElementById('admin-pool').value;
   if(!barbeiro){ showToast('Selecione um barbeiro', true); return; }
   if(qtd < 1){ showToast('Quantidade deve ser ao menos 1', true); return; }
+
+  // Add fichas
   const {data:fichaRow} = await sb.from('fichas').select('fichas').eq('barbeiro', barbeiro).single();
   const novasFichas = (fichaRow?.fichas||0) + qtd;
   const {error} = await sb.from('fichas').upsert([{barbeiro, fichas:novasFichas}], {onConflict:'barbeiro'});
   if(error){ showToast('Erro: '+error.message, true); return; }
-  showToast(qtd+' ficha(s) adicionada(s) para '+barbeiro+'!');
+
+  // If pool selected, register lancamento for random client
+  if(pool) {
+    const prev = document.getElementById('admin-pool-preview');
+    const clienteNome = prev?.dataset?.cliente;
+    if(clienteNome) {
+      const now = new Date();
+      const hora = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+      const data = now.toISOString().split('T')[0];
+      await sb.from('lancamentos').insert([{
+        cliente: clienteNome, barbeiro, servico: pool,
+        pagamento: 'Admin', hora, data_atendimento: data
+      }]);
+      await loadLancamentos();
+    }
+  }
+
+  showToast(qtd+' ficha(s) adicionada(s) para '+barbeiro+(pool?' + lançamento registrado!':'!'));
   document.getElementById('admin-qtd').value = '1';
   document.getElementById('admin-motivo').value = '';
+  document.getElementById('admin-pool').value = '';
+  await renderAdminPanel();
+}
+
+async function removerFichaAdmin(barbeiro, atual) {
+  if(atual <= 0){ showToast('Barbeiro já tem 0 fichas', true); return; }
+  if(!confirm('Remover 1 ficha de '+barbeiro+'?')) return;
+  const {error} = await sb.from('fichas').upsert([{barbeiro, fichas: atual-1}], {onConflict:'barbeiro'});
+  if(error){ showToast('Erro: '+error.message, true); return; }
+  showToast('1 ficha removida de '+barbeiro+'.');
+  await renderAdminPanel();
+}
+
+async function zerarFichasAdmin(barbeiro) {
+  if(!confirm('Zerar TODAS as fichas de '+barbeiro+'? Esta ação não pode ser desfeita.')) return;
+  const {error} = await sb.from('fichas').upsert([{barbeiro, fichas: 0}], {onConflict:'barbeiro'});
+  if(error){ showToast('Erro: '+error.message, true); return; }
+  showToast('Fichas de '+barbeiro+' zeradas.');
   await renderAdminPanel();
 }
 
@@ -688,8 +768,6 @@ function renderClientes(filter='') {
   tbody.innerHTML = list.map(c=>{
     const plano = allPlanos.find(p=>p.cliente_id===c.id&&p.status==='ativo');
     const atend = allLancamentos.filter(l=>l.cliente===c.nome).length;
-    const email = c.email ? JSON.stringify(c.email) : "''";
-    const nasc = c.nascimento ? JSON.stringify(c.nascimento) : "''";
     return `<tr>
       <td style="font-weight:500">${c.nome}</td>
       <td style="color:var(--muted)">${c.telefone}</td>
@@ -697,8 +775,8 @@ function renderClientes(filter='') {
       <td style="color:var(--muted)">${fmtDate(c.created_at)}</td>
       <td>${atend}</td>
       <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="ativarParaCliente('${c.id}','${c.nome}')">+ Plano</button></td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--info);border-color:rgba(91,155,213,0.3)" onclick="abrirEdicaoCliente('${c.id}',${JSON.stringify(c.nome)},${JSON.stringify(c.telefone)},${email},${nasc})">✏️</button></td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirCliente('${c.id}',${JSON.stringify(c.nome)})">🗑</button></td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--info);border-color:rgba(91,155,213,0.3)" data-id="${c.id}" onclick="abrirEdicaoClienteById(this.dataset.id)">✏️</button></td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" data-id="${c.id}" data-nome="${c.nome.replace(/"/g,'&quot;')}" onclick="excluirCliente(this.dataset.id,this.dataset.nome)">🗑</button></td>
     </tr>`;}).join('');
 }
 
@@ -770,13 +848,26 @@ function populateMesFiltro() {
 async function renderFichas() {
   populateMesFiltro();
   const mesFiltro = document.getElementById('fichas-mes-filtro')?.value || '';
-  const lans = mesFiltro
-    ? allLancamentos.filter(l => { const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:''); return d.startsWith(mesFiltro); })
-    : allLancamentos;
+
+  // FONTE DE VERDADE: tabela fichas para totais reais
+  const fichasRows = await loadFichas();
   const fichasMap = {};
   BARBERS.forEach(b => fichasMap[b] = 0);
-  lans.forEach(l => { if(fichasMap[l.barbeiro]!==undefined) fichasMap[l.barbeiro]++; });
-  const totalFichas = Object.values(fichasMap).reduce((a,b)=>a+b,0);
+  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
+
+  // Para visualização mensal, conta lancamentos do período
+  let displayMap = fichasMap;
+  if(mesFiltro) {
+    const lanMap = {};
+    BARBERS.forEach(b => lanMap[b] = 0);
+    allLancamentos.filter(l => {
+      const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
+      return d.startsWith(mesFiltro);
+    }).forEach(l => { if(lanMap[l.barbeiro]!==undefined) lanMap[l.barbeiro]++; });
+    displayMap = lanMap;
+  }
+
+  const totalDisplay = Object.values(displayMap).reduce((a,b)=>a+b,0);
   const totalPool = allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
   const commPool = totalPool * 0.5;
   let periodoLabel = 'Todo o período';
@@ -789,15 +880,15 @@ async function renderFichas() {
   if(badge) badge.textContent = mesFiltro ? '— '+periodoLabel : '';
   const summary = document.getElementById('fichas-summary');
   if(summary) summary.innerHTML = `
-    <div class="card"><div class="card-title">Fichas no período</div><div class="card-value">${totalFichas}</div></div>
+    <div class="card"><div class="card-title">${mesFiltro?'Atend. no mês':'Fichas (tabela)'}</div><div class="card-value">${totalDisplay}</div></div>
     <div class="card"><div class="card-title">Pool comissão (50%)</div><div class="card-value" style="color:var(--success)">R$ ${commPool.toFixed(2).replace('.',',')}</div></div>
     <div class="card"><div class="card-title">Período</div><div class="card-value" style="font-size:15px;letter-spacing:0">${periodoLabel}</div></div>`;
   const tbody = document.getElementById('fichas-table');
   if(!tbody) return;
   tbody.innerHTML = BARBERS.map((b,i)=>{
-    const fichas = fichasMap[b]||0;
-    const pct = totalFichas>0 ? Math.round((fichas/totalFichas)*100) : 0;
-    const comm = (commPool*(totalFichas>0?fichas/totalFichas:0)).toFixed(2).replace('.',',');
+    const fichas = displayMap[b]||0;
+    const pct = totalDisplay>0 ? Math.round((fichas/totalDisplay)*100) : 0;
+    const comm = (commPool*(totalDisplay>0?fichas/totalDisplay:0)).toFixed(2).replace('.',',');
     const show = Math.min(fichas,20);
     const chips = Array.from({length:show},()=>`<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${BARBER_COLORS[i]};color:#111;text-align:center;line-height:20px;font-size:10px;margin:1px">✦</span>`).join('');
     const extra = fichas>20?`<span style="font-size:11px;color:var(--muted)"> +${fichas-20}</span>`:'';
@@ -960,6 +1051,12 @@ function abrirEdicaoCliente(id, nome, telefone, email, nasc) {
   document.getElementById('ec-email').value = email||'';
   document.getElementById('ec-nasc').value = nasc||'';
   openModal('modal-editar-cliente');
+}
+
+function abrirEdicaoClienteById(id) {
+  const c = allClientes.find(x => x.id === id);
+  if(!c){ showToast('Cliente não encontrado', true); return; }
+  abrirEdicaoCliente(c.id, c.nome, c.telefone, c.email||'', c.nascimento||'');
 }
 
 async function salvarEdicaoCliente() {
