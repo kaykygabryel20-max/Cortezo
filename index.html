@@ -205,7 +205,7 @@ select.form-input option{background:var(--surface2)}
             </select>
           </div>
         </div>
-        <div class="form-row full">
+        <div class="form-row">
           <div class="form-group">
             <label class="form-label">Serviço</label>
             <select class="form-input" id="lan-servico" onchange="updateDuracao()">
@@ -213,6 +213,16 @@ select.form-input option{background:var(--surface2)}
               <option value="cabelo">Cabelo — 30 min</option>
               <option value="barba">Barba — 30 min</option>
               <option value="cabelo_barba">Cabelo + Barba — 60 min</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Forma de pagamento</label>
+            <select class="form-input" id="lan-pagamento">
+              <option value="">Selecionar...</option>
+              <option value="PIX">PIX</option>
+              <option value="Crédito">Crédito</option>
+              <option value="Débito">Débito</option>
+              <option value="Dinheiro">Dinheiro</option>
             </select>
           </div>
         </div>
@@ -238,8 +248,8 @@ select.form-input option{background:var(--surface2)}
       </div>
       <div class="table-wrap">
         <div class="table-header"><span class="table-label">Histórico de atendimentos</span></div>
-        <table><thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Serviço</th><th>Barbeiro</th><th>Duração</th><th>Ficha</th><th></th></tr></thead>
-        <tbody id="hist-lancamentos"><tr><td colspan="8" class="loading-row">Carregando...</td></tr></tbody></table>
+        <table><thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Serviço</th><th>Barbeiro</th><th>Pagamento</th><th>Duração</th><th>Ficha</th><th></th></tr></thead>
+        <tbody id="hist-lancamentos"><tr><td colspan="9" class="loading-row">Carregando...</td></tr></tbody></table>
       </div>
     </div>
 
@@ -361,6 +371,60 @@ select.form-input option{background:var(--surface2)}
           <table><thead><tr><th>Barbeiro</th><th>Fichas atuais</th><th>Remover 1</th><th>Zerar tudo</th></tr></thead>
           <tbody id="admin-excluir-table"></tbody></table>
         </div>
+        <div class="sep"></div>
+
+        <!-- LANÇAR PLANO AO POOL -->
+        <div style="margin-bottom:24px">
+          <div style="font-size:16px;font-weight:600;margin-bottom:4px">Lançar plano ao pool</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Ativa um plano para um cliente e adiciona o valor imediatamente ao pool de comissão, com cálculo pro-rata automático se ativado no meio do mês.</div>
+        </div>
+        <div class="table-wrap" style="margin-bottom:20px">
+          <div class="table-header"><span class="table-label">Novo lançamento ao pool</span></div>
+          <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group">
+              <label class="form-label">Cliente</label>
+              <select class="form-input" id="pool-cliente">
+                <option value="">Selecionar cliente...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Plano</label>
+              <select class="form-input" id="pool-plano" onchange="calcPoolPreview()">
+                <option value="">Selecionar plano...</option>
+                <option value="cabelo">Cabelo — R$ 79,90/mês</option>
+                <option value="barba">Barba — R$ 89,90/mês</option>
+                <option value="cabelo_barba">Cabelo + Barba — R$ 159,90/mês</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data de ativação</label>
+              <input type="date" class="form-input" id="pool-data" oninput="calcPoolPreview()">
+            </div>
+            <div class="form-group" style="align-self:end">
+              <button class="btn btn-primary" style="width:100%;padding:9px" onclick="lancarPlanoPool()">⬡ Lançar ao pool</button>
+            </div>
+          </div>
+          <!-- Preview pro-rata -->
+          <div id="pool-preview" style="display:none;padding:0 20px 20px">
+            <div style="background:var(--surface2);border-radius:8px;padding:14px;font-size:13px;border:1px solid var(--border)">
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px">Distribuição pro-rata</div>
+              <div id="pool-preview-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLANOS ATIVOS NO POOL -->
+        <div class="table-wrap" style="margin-bottom:20px">
+          <div class="table-header">
+            <span class="table-label">Planos no pool</span>
+            <span id="admin-pool-total" style="font-size:13px;color:var(--success);font-weight:500"></span>
+          </div>
+          <table>
+            <thead><tr><th>Cliente</th><th>Plano</th><th>Ativação</th><th>Renovação</th><th>Valor mês atual</th><th>Status</th><th></th></tr></thead>
+            <tbody id="admin-pool-table"><tr><td colspan="7" class="loading-row">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+
         <div class="sep"></div>
         <div style="font-size:12px;color:var(--muted);line-height:1.9">
           <strong style="color:var(--text)">Atenção:</strong> ajustes feitos aqui são diretos na tabela de fichas. Use para correções pontuais.
@@ -541,7 +605,7 @@ async function renderAdminPanel() {
   sel.innerHTML = '<option value="">Selecionar...</option>';
   BARBERS.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
 
-  // Populate client selector in admin
+  // Populate client selector in admin (fichas)
   const cliSel = document.getElementById('admin-cliente-manual');
   if(cliSel) {
     const curCli = cliSel.value;
@@ -552,32 +616,37 @@ async function renderAdminPanel() {
     });
     if(curCli) cliSel.value = curCli;
   }
+  // Populate client selector in pool launch
+  const poolCliSel = document.getElementById('pool-cliente');
+  if(poolCliSel) {
+    const cur = poolCliSel.value;
+    poolCliSel.innerHTML = '<option value="">Selecionar cliente...</option>';
+    allClientes.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.nome; o.textContent = c.nome; poolCliSel.appendChild(o);
+    });
+    if(cur) poolCliSel.value = cur;
+  }
+  // Set default date to today for pool launch
+  const poolDataEl = document.getElementById('pool-data');
+  if(poolDataEl && !poolDataEl.value) poolDataEl.value = new Date().toISOString().split('T')[0];
+  // Render pool table
+  renderAdminPoolTable();
 
-  // Fichas do mês atual = lançamentos do mês atual (conectado)
-  const nowAdmin = new Date();
-  const mesAdmin = nowAdmin.getFullYear()+'-'+String(nowAdmin.getMonth()+1).padStart(2,'0');
+  const fichasRows = await loadFichas();
   const fichasMap = {};
   BARBERS.forEach(b => fichasMap[b] = 0);
-  allLancamentos.filter(l=>{
-    const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
-    return d.startsWith(mesAdmin);
-  }).forEach(l=>{ if(fichasMap[l.barbeiro]!==undefined) fichasMap[l.barbeiro]++; });
-  const mesAdminLabel = nowAdmin.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
   const cards = document.getElementById('admin-fichas-cards');
   if(cards) cards.innerHTML = BARBERS.map((b,i) => `
     <div class="card" style="border-left:3px solid ${BARBER_COLORS[i]}">
       <div class="card-title">${b}</div>
       <div class="card-value">${fichasMap[b]||0} <span style="font-size:14px;color:var(--muted)">fichas</span></div>
-      <div style="font-size:10px;color:var(--muted);margin-top:2px">${mesAdminLabel}</div>
     </div>`).join('');
-  // Render excluir table — mostra fichas acumuladas (tabela fichas) para ajuste manual
-  const fichasRows = await loadFichas();
-  const fichasRawMap = {};
-  BARBERS.forEach(b => fichasRawMap[b] = 0);
-  fichasRows.forEach(f => { if(fichasRawMap[f.barbeiro]!==undefined) fichasRawMap[f.barbeiro] = f.fichas; });
+  // Render excluir table
   const etbody = document.getElementById('admin-excluir-table');
   if(etbody) etbody.innerHTML = BARBERS.map((b,i) => {
-    const f = fichasRawMap[b]||0;
+    const f = fichasMap[b]||0;
     return `<tr>
       <td style="font-weight:500;color:${BARBER_COLORS[i]}">${b}</td>
       <td>${f}</td>
@@ -779,17 +848,12 @@ async function loadFichas() {
 
 // ─── RENDER ──────────────────────────────────────────────
 function renderDashboard() {
-  const now = new Date();
-  const mesCurrent = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const totalPool = calcPoolDoMes(mesCurrent);
-  const fichasCount = allLancamentos.filter(l=>{
-    const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
-    return d.startsWith(mesCurrent);
-  }).length;
+  const totalPool = allPlanos.reduce((s,p) => s + (PLAN_PRICES[p.plano]||0), 0);
+  const fichasCount = allLancamentos.length;
   document.getElementById('d-clientes').textContent = allClientes.length;
   document.getElementById('d-planos').textContent = allPlanos.filter(p=>p.status==='ativo').length;
   document.getElementById('d-pool').textContent = 'R$ ' + totalPool.toFixed(2).replace('.',',');
-  document.getElementById('d-fichas').textContent = fichasCount+' (mês)';
+  document.getElementById('d-fichas').textContent = fichasCount;
   renderPoolCards('pool-cards-dash');
   const tbody = document.getElementById('dash-lancamentos');
   if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="5" class="loading-row" style="color:var(--muted)">Nenhum atendimento registrado</td></tr>'; return; }
@@ -805,25 +869,8 @@ function renderDashboard() {
 
 function renderPoolCards(id) {
   const c = document.getElementById(id); if(!c) return;
-  const nowPC = new Date();
-  const mesPC = nowPC.getFullYear()+'-'+String(nowPC.getMonth()+1).padStart(2,'0');
-  // Pool por tipo com pro-rata do mês atual
   const pools = {cabelo:0, barba:0, cabelo_barba:0};
-  allPlanos.forEach(p => {
-    const preco = PLAN_PRICES[p.plano]||0;
-    if(pools[p.plano]===undefined) return;
-    if(!p.data_ativacao) { pools[p.plano] += preco; return; }
-    const ativacao = new Date(p.data_ativacao+'T12:00');
-    const mesAtiv = ativacao.getFullYear()*100+(ativacao.getMonth()+1);
-    const mesPCNum = nowPC.getFullYear()*100+(nowPC.getMonth()+1);
-    const ultimoDia = new Date(nowPC.getFullYear(), nowPC.getMonth()+1, 0).getDate();
-    if(mesAtiv === mesPCNum) {
-      const diasRestantes = ultimoDia - ativacao.getDate() + 1;
-      pools[p.plano] += preco * (diasRestantes / ultimoDia);
-    } else {
-      pools[p.plano] += preco;
-    }
-  });
+  allPlanos.forEach(p => { if(pools[p.plano]!==undefined) pools[p.plano] += PLAN_PRICES[p.plano]; });
   const total = Object.values(pools).reduce((a,b)=>a+b,0);
   const cfg = [
     {key:'cabelo', name:'Pool Cabelo', price:'79,90', color:'var(--pool-hair)', badge:'hair'},
@@ -850,7 +897,7 @@ function renderPoolCards(id) {
 
 function renderLancamentos() {
   const tbody = document.getElementById('hist-lancamentos');
-  if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Nenhum atendimento ainda</td></tr>'; return; }
+  if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px">Nenhum atendimento ainda</td></tr>'; return; }
   tbody.innerHTML = allLancamentos.map(l=>{
     const bi = BARBERS.indexOf(l.barbeiro);
     const col = BARBER_COLORS[bi]||'#888';
@@ -862,6 +909,7 @@ function renderLancamentos() {
       <td>${l.cliente}</td>
       <td>${planBadge(l.servico)}</td>
       <td>${l.barbeiro}</td>
+      <td><span class="badge badge-info" style="font-size:10px">${l.pagamento||'—'}</span></td>
       <td>${PLAN_DUR[l.servico]||'—'}</td>
       <td><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:${col};text-align:center;line-height:22px;font-size:10px;color:#111;font-weight:500">✦</span></td>
       <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirLancamento('${l.id}','${l.barbeiro}')">🗑</button></td>
@@ -909,17 +957,8 @@ async function renderBarbeiros() {
   const fichasMap = {};
   BARBERS.forEach(b => fichasMap[b] = 0);
   fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
-  // Fichas = contagem de lançamentos no mês atual (fichas conectadas aos lançamentos)
-  const now = new Date();
-  const mesCurrent = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const lanMesAtual = allLancamentos.filter(l => {
-    const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
-    return d.startsWith(mesCurrent);
-  });
-  BARBERS.forEach(b => fichasMap[b] = 0);
-  lanMesAtual.forEach(l => { if(fichasMap[l.barbeiro]!==undefined) fichasMap[l.barbeiro]++; });
   const totalFichas = Object.values(fichasMap).reduce((a,b)=>a+b,0);
-  const totalPool = calcPoolDoMes(mesCurrent)*0.5;
+  const totalPool = allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0)*0.5;
   const c = document.getElementById('barber-cards');
   c.innerHTML = BARBERS.map((b,i)=>{
     const fichas = fichasMap[b]||0;
@@ -969,23 +1008,27 @@ async function renderFichas() {
   populateMesFiltro();
   const mesFiltro = document.getElementById('fichas-mes-filtro')?.value || '';
 
-  // FONTE DE VERDADE: lançamentos. Fichas = 1 por lançamento, filtrado pelo período.
-  const lansFiltrados = mesFiltro
-    ? allLancamentos.filter(l => {
-        const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
-        return d.startsWith(mesFiltro);
-      })
-    : allLancamentos;
+  // FONTE DE VERDADE: tabela fichas para totais reais
+  const fichasRows = await loadFichas();
+  const fichasMap = {};
+  BARBERS.forEach(b => fichasMap[b] = 0);
+  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
 
-  const displayMap = {};
-  BARBERS.forEach(b => displayMap[b] = 0);
-  lansFiltrados.forEach(l => { if(displayMap[l.barbeiro]!==undefined) displayMap[l.barbeiro]++; });
+  // Para visualização mensal, conta lancamentos do período
+  let displayMap = fichasMap;
+  if(mesFiltro) {
+    const lanMap = {};
+    BARBERS.forEach(b => lanMap[b] = 0);
+    allLancamentos.filter(l => {
+      const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
+      return d.startsWith(mesFiltro);
+    }).forEach(l => { if(lanMap[l.barbeiro]!==undefined) lanMap[l.barbeiro]++; });
+    displayMap = lanMap;
+  }
 
   const totalDisplay = Object.values(displayMap).reduce((a,b)=>a+b,0);
-
-  // Pool do mês: soma proporcional dos planos ativos considerando pro-rata de ativação
-  const commPool = calcPoolDoMes(mesFiltro) * 0.5;
-
+  const totalPool = allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
+  const commPool = totalPool * 0.5;
   let periodoLabel = 'Todo o período';
   if(mesFiltro) {
     const [y,mo] = mesFiltro.split('-');
@@ -996,7 +1039,7 @@ async function renderFichas() {
   if(badge) badge.textContent = mesFiltro ? '— '+periodoLabel : '';
   const summary = document.getElementById('fichas-summary');
   if(summary) summary.innerHTML = `
-    <div class="card"><div class="card-title">Fichas no período</div><div class="card-value">${totalDisplay}</div></div>
+    <div class="card"><div class="card-title">${mesFiltro?'Atend. no mês':'Fichas (tabela)'}</div><div class="card-value">${totalDisplay}</div></div>
     <div class="card"><div class="card-title">Pool comissão (50%)</div><div class="card-value" style="color:var(--success)">R$ ${commPool.toFixed(2).replace('.',',')}</div></div>
     <div class="card"><div class="card-title">Período</div><div class="card-value" style="font-size:15px;letter-spacing:0">${periodoLabel}</div></div>`;
   const tbody = document.getElementById('fichas-table');
@@ -1015,51 +1058,16 @@ async function renderFichas() {
     </tr>`;}).join('');
 }
 
-// Calcula o pool de comissão do mês considerando pro-rata de planos ativados no meio do mês.
-// Plano ativado dia X: valor * (dias_restantes_no_mes / dias_do_mes) vai pro mês atual,
-// e o restante vai pro mês seguinte. Nos meses subsequentes à ativação conta 100%.
-function calcPoolDoMes(mesFiltro) {
-  if(!mesFiltro) {
-    // sem filtro: soma tudo sem pro-rata
-    return allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
-  }
-  const [fy, fm] = mesFiltro.split('-').map(Number);
-  const primeiroDiaMes = new Date(fy, fm-1, 1);
-  const ultimoDiaMes = new Date(fy, fm, 0); // último dia do mês
-  const diasNoMes = ultimoDiaMes.getDate();
-  let total = 0;
-  allPlanos.forEach(p => {
-    const preco = PLAN_PRICES[p.plano]||0;
-    if(!p.data_ativacao) return;
-    const ativacao = new Date(p.data_ativacao+'T12:00');
-    const renovacao = p.data_renovacao ? new Date(p.data_renovacao+'T12:00') : null;
-    // Verifica se o plano está ativo no mês filtrado
-    if(ativacao > ultimoDiaMes) return; // ainda não ativado nesse mês
-    if(renovacao && renovacao < primeiroDiaMes) return; // já expirou antes desse mês
-    const mesAtivacao = ativacao.getFullYear()*100 + (ativacao.getMonth()+1);
-    const mesFiltNum = fy*100 + fm;
-    if(mesAtivacao === mesFiltNum) {
-      // Ativado no meio deste mês: pro-rata proporcional ao dias restantes
-      const diaAtivacao = ativacao.getDate();
-      const diasRestantes = diasNoMes - diaAtivacao + 1;
-      total += preco * (diasRestantes / diasNoMes);
-    } else {
-      // Plano já estava ativo antes deste mês: conta integral
-      total += preco;
-    }
-  });
-  return total;
-}
-
 // ─── ACTIONS ─────────────────────────────────────────────
 async function registrarLancamento() {
   const cliente = document.getElementById('lan-cliente').value;
   const barbeiro = document.getElementById('lan-barbeiro').value;
   const servico = document.getElementById('lan-servico').value;
+  const pagamento = document.getElementById('lan-pagamento').value;
   const hora = document.getElementById('lan-hora').value;
   const data = document.getElementById('lan-data').value;
-  if(!cliente||!barbeiro||!servico||!hora||!data){ showToast('Preencha todos os campos', true); return; }
-  const {error} = await sb.from('lancamentos').insert([{cliente, barbeiro, servico, hora, data_atendimento: data}]);
+  if(!cliente||!barbeiro||!servico||!pagamento||!hora||!data){ showToast('Preencha todos os campos', true); return; }
+  const {error} = await sb.from('lancamentos').insert([{cliente, barbeiro, servico, pagamento, hora, data_atendimento: data}]);
   if(error){ showToast('Erro: '+error.message, true); return; }
   // Upsert ficha
   const {data:fichaRow} = await sb.from('fichas').select('fichas').eq('barbeiro', barbeiro).single();
@@ -1069,7 +1077,7 @@ async function registrarLancamento() {
   await loadLancamentos();
   renderLancamentos();
   renderDashboard();
-  ['lan-cliente','lan-barbeiro','lan-servico'].forEach(i => document.getElementById(i).value='');
+  ['lan-cliente','lan-barbeiro','lan-servico','lan-pagamento'].forEach(i => document.getElementById(i).value='');
   document.getElementById('lan-duracao').value='—';
   const now = new Date();
   document.getElementById('lan-hora').value = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
@@ -1332,6 +1340,160 @@ function showToast(msg, error=false){
 }
 
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
+
+// ─── POOL LAUNCH (Admin) ─────────────────────────────────
+function calcPoolPreview() {
+  const plano = document.getElementById('pool-plano')?.value;
+  const dataVal = document.getElementById('pool-data')?.value;
+  const prev = document.getElementById('pool-preview');
+  const content = document.getElementById('pool-preview-content');
+  if(!prev || !content) return;
+  if(!plano || !dataVal) { prev.style.display='none'; return; }
+
+  const preco = PLAN_PRICES[plano]||0;
+  const ativacao = new Date(dataVal+'T12:00');
+  const ano = ativacao.getFullYear();
+  const mes = ativacao.getMonth(); // 0-based
+
+  // Dias no mês de ativação
+  const ultimoDiaMesAtiv = new Date(ano, mes+1, 0).getDate();
+  const diaAtiv = ativacao.getDate();
+  const diasRestantes = ultimoDiaMesAtiv - diaAtiv + 1;
+  const propAtual = diasRestantes / ultimoDiaMesAtiv;
+  const propProx = 1 - propAtual;
+
+  const valorAtual = preco * propAtual;
+  const valorProx = preco * propProx;
+
+  const mesAtualLabel = ativacao.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const proxMes = new Date(ano, mes+1, 1);
+  const mesProxLabel = proxMes.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+
+  const capitalize = s => s.charAt(0).toUpperCase()+s.slice(1);
+  const isFullMonth = diaAtiv === 1;
+
+  if(isFullMonth) {
+    content.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="color:var(--muted)">Valor do plano</span>
+        <span style="color:var(--success);font-weight:600">R$ ${preco.toFixed(2).replace('.',',')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="color:var(--muted)">Mês de cobrança</span>
+        <span>${capitalize(mesAtualLabel)}</span>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">Ativado no 1º dia — sem pro-rata, valor integral no mês atual.</div>`;
+  } else {
+    content.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="color:var(--muted)">${capitalize(mesAtualLabel)}</span>
+        <span style="color:var(--success);font-weight:600">R$ ${valorAtual.toFixed(2).replace('.',',')}
+          <span style="font-size:11px;color:var(--muted);font-weight:400">(${diasRestantes}/${ultimoDiaMesAtiv} dias)</span>
+        </span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="color:var(--muted)">${capitalize(mesProxLabel)}</span>
+        <span style="color:var(--accent);font-weight:600">R$ ${valorProx.toFixed(2).replace('.',',')}
+          <span style="font-size:11px;color:var(--muted);font-weight:400">(${ultimoDiaMesAtiv-diasRestantes}/${ultimoDiaMesAtiv} dias)</span>
+        </span>
+      </div>
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Total (valor do plano)</span>
+        <span>R$ ${preco.toFixed(2).replace('.',',')}</span>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">O valor é distribuído proporcionalmente entre os dois meses.</div>`;
+  }
+  prev.style.display = 'block';
+}
+
+async function lancarPlanoPool() {
+  const cliente_nome = document.getElementById('pool-cliente')?.value;
+  const plano = document.getElementById('pool-plano')?.value;
+  const dataVal = document.getElementById('pool-data')?.value;
+  if(!cliente_nome){ showToast('Selecione um cliente', true); return; }
+  if(!plano){ showToast('Selecione um plano', true); return; }
+  if(!dataVal){ showToast('Informe a data de ativação', true); return; }
+
+  const dt = new Date(dataVal+'T12:00');
+  const renovacao = new Date(dt); renovacao.setDate(renovacao.getDate()+30);
+  const cliente_obj = allClientes.find(c=>c.nome===cliente_nome);
+
+  const btn = document.querySelector('[onclick="lancarPlanoPool()"]');
+  if(btn){ btn.textContent='Salvando...'; btn.disabled=true; }
+
+  const {error} = await sb.from('planos').insert([{
+    cliente: cliente_nome,
+    cliente_id: cliente_obj?.id||null,
+    plano,
+    pagamento: 'Admin',
+    status: 'ativo',
+    data_ativacao: dt.toISOString().split('T')[0],
+    data_renovacao: renovacao.toISOString().split('T')[0]
+  }]);
+
+  if(btn){ btn.textContent='⬡ Lançar ao pool'; btn.disabled=false; }
+  if(error){ showToast('Erro: '+error.message, true); return; }
+
+  const preco = PLAN_PRICES[plano]||0;
+  showToast('Plano lançado ao pool! R$ '+preco.toFixed(2).replace('.',',') +' adicionado.');
+
+  // Reset form
+  document.getElementById('pool-cliente').value='';
+  document.getElementById('pool-plano').value='';
+  document.getElementById('pool-data').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pool-preview').style.display='none';
+
+  await loadPlanos();
+  renderPlanos();
+  renderDashboard();
+  renderAdminPoolTable();
+}
+
+function renderAdminPoolTable() {
+  const tbody = document.getElementById('admin-pool-table');
+  const totalEl = document.getElementById('admin-pool-total');
+  if(!tbody) return;
+
+  const now = new Date();
+  const mesCurrent = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const [fy, fm] = mesCurrent.split('-').map(Number);
+  const ultimoDiaMes = new Date(fy, fm, 0).getDate();
+
+  if(!allPlanos.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Nenhum plano ativo</td></tr>'; return; }
+
+  let totalMes = 0;
+  const rows = allPlanos.map(p => {
+    const preco = PLAN_PRICES[p.plano]||0;
+    let valorMes = preco;
+    let prorataTxt = '';
+    if(p.data_ativacao) {
+      const ativ = new Date(p.data_ativacao+'T12:00');
+      const mesAtiv = ativ.getFullYear()*100+(ativ.getMonth()+1);
+      const mesCur = fy*100+fm;
+      if(mesAtiv === mesCur) {
+        const diasRest = ultimoDiaMes - ativ.getDate() + 1;
+        valorMes = preco * (diasRest / ultimoDiaMes);
+        prorataTxt = ` <span style="font-size:10px;color:var(--muted)">(${diasRest}d)</span>`;
+      }
+    }
+    totalMes += valorMes;
+    const statusBadge = p.status==='ativo'
+      ? '<span class="badge badge-success">ativo</span>'
+      : '<span class="badge badge-danger">'+p.status+'</span>';
+    return `<tr>
+      <td style="font-weight:500">${p.cliente}</td>
+      <td>${planBadge(p.plano)}</td>
+      <td style="color:var(--muted)">${fmtDate(p.data_ativacao)}</td>
+      <td style="color:var(--muted)">${fmtDate(p.data_renovacao)}</td>
+      <td style="color:var(--success)">R$ ${valorMes.toFixed(2).replace('.',',')}${prorataTxt}</td>
+      <td>${statusBadge}</td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirPlano('${p.id}','${p.cliente}')">🗑</button></td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows.join('');
+  if(totalEl) totalEl.textContent = 'Total mês: R$ '+totalMes.toFixed(2).replace('.',',');
+}
 
 init();
 </script>
