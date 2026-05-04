@@ -336,23 +336,17 @@ select.form-input option{background:var(--surface2)}
               </select>
             </div>
             <div class="form-group" style="min-width:160px;flex:1">
-              <label class="form-label">Serviço / Pool</label>
+              <label class="form-label">Pool (registrar lançamento)</label>
               <select class="form-input" id="admin-pool" onchange="atualizarPoolPreview()">
-                <option value="">Sem serviço — só ficha</option>
+                <option value="">Sem pool — só ficha</option>
                 <option value="cabelo">Cabelo</option>
                 <option value="barba">Barba</option>
                 <option value="cabelo_barba">Cabelo + Barba</option>
               </select>
             </div>
-            <div class="form-group" style="min-width:160px;flex:1">
-              <label class="form-label">Cliente (manual ou aleatório)</label>
-              <select class="form-input" id="admin-cliente-manual" onchange="atualizarPoolPreview()">
-                <option value="">🎲 Sortear do pool automaticamente</option>
-              </select>
-            </div>
             <div class="form-group" style="width:100px">
               <label class="form-label">Fichas</label>
-              <input type="number" class="form-input" id="admin-qtd" min="1" max="50" value="1" oninput="atualizarPoolPreview()">
+              <input type="number" class="form-input" id="admin-qtd" min="1" max="50" value="1">
             </div>
             <div class="form-group" style="width:160px">
               <label class="form-label">Motivo (opcional)</label>
@@ -361,70 +355,12 @@ select.form-input option{background:var(--surface2)}
             <button class="btn btn-success" onclick="adicionarFichasAdmin()" style="margin-bottom:2px">+ Adicionar</button>
           </div>
           <div id="admin-pool-preview" style="padding:0 20px 16px;font-size:12px;color:var(--muted);min-height:20px"></div>
-          <div id="admin-atendimentos-preview" style="padding:0 20px 16px;font-size:12px;border-top:1px solid var(--border);display:none">
-            <div class="admin-mes-label" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Atendimentos que serão registrados — mês atual</div>
-            <div id="admin-atendimentos-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-          </div>
         </div>
         <div class="table-wrap" style="margin-bottom:20px">
           <div class="table-header"><span class="table-label">Remover fichas por barbeiro</span></div>
           <table><thead><tr><th>Barbeiro</th><th>Fichas atuais</th><th>Remover 1</th><th>Zerar tudo</th></tr></thead>
           <tbody id="admin-excluir-table"></tbody></table>
         </div>
-        <div class="sep"></div>
-
-        <!-- LANÇAR PLANO AO POOL -->
-        <div style="margin-bottom:24px">
-          <div style="font-size:16px;font-weight:600;margin-bottom:4px">Lançar plano ao pool</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Ativa um plano para um cliente e adiciona o valor imediatamente ao pool de comissão, com cálculo pro-rata automático se ativado no meio do mês.</div>
-        </div>
-        <div class="table-wrap" style="margin-bottom:20px">
-          <div class="table-header"><span class="table-label">Novo lançamento ao pool</span></div>
-          <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div class="form-group">
-              <label class="form-label">Cliente</label>
-              <select class="form-input" id="pool-cliente">
-                <option value="">Selecionar cliente...</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Plano</label>
-              <select class="form-input" id="pool-plano" onchange="calcPoolPreview()">
-                <option value="">Selecionar plano...</option>
-                <option value="cabelo">Cabelo — R$ 79,90/mês</option>
-                <option value="barba">Barba — R$ 89,90/mês</option>
-                <option value="cabelo_barba">Cabelo + Barba — R$ 159,90/mês</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Data de ativação</label>
-              <input type="date" class="form-input" id="pool-data" oninput="calcPoolPreview()">
-            </div>
-            <div class="form-group" style="align-self:end">
-              <button class="btn btn-primary" style="width:100%;padding:9px" onclick="lancarPlanoPool()">⬡ Lançar ao pool</button>
-            </div>
-          </div>
-          <!-- Preview pro-rata -->
-          <div id="pool-preview" style="display:none;padding:0 20px 20px">
-            <div style="background:var(--surface2);border-radius:8px;padding:14px;font-size:13px;border:1px solid var(--border)">
-              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px">Distribuição pro-rata</div>
-              <div id="pool-preview-content"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- PLANOS ATIVOS NO POOL -->
-        <div class="table-wrap" style="margin-bottom:20px">
-          <div class="table-header">
-            <span class="table-label">Planos no pool</span>
-            <span id="admin-pool-total" style="font-size:13px;color:var(--success);font-weight:500"></span>
-          </div>
-          <table>
-            <thead><tr><th>Cliente</th><th>Plano</th><th>Ativação</th><th>Renovação</th><th>Valor mês atual</th><th>Status</th><th></th></tr></thead>
-            <tbody id="admin-pool-table"><tr><td colspan="7" class="loading-row">Carregando...</td></tr></tbody>
-          </table>
-        </div>
-
         <div class="sep"></div>
         <div style="font-size:12px;color:var(--muted);line-height:1.9">
           <strong style="color:var(--text)">Atenção:</strong> ajustes feitos aqui são diretos na tabela de fichas. Use para correções pontuais.
@@ -562,8 +498,8 @@ const SUPABASE_URL = 'https://tmlmfpndvpmumsgczvto.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_g6jQOXJP1bNUg7Da4BCRtA_dZ6L0-Gs';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const BARBERS = ['Kayky','Luann','Thiago','Pedro','Patrezio','Patrick'];
-const BARBER_COLORS = ['#c9a84c','#5b9bd5','#4caf7d','#e05555','#9b6fd4','#e07a5f'];
+const BARBERS = ['Kayky','Luann','Thiago','Pedro','Patrezio','Patrick','Joabe'];
+const BARBER_COLORS = ['#c9a84c','#5b9bd5','#4caf7d','#e05555','#9b6fd4','#e07a5f','#20b2aa'];
 const PLAN_PRICES = {cabelo:79.90, barba:89.90, cabelo_barba:159.90};
 const PLAN_NAMES = {cabelo:'Cabelo', barba:'Barba', cabelo_barba:'Cabelo + Barba'};
 const PLAN_DUR = {cabelo:'30 min', barba:'30 min', cabelo_barba:'60 min'};
@@ -604,35 +540,6 @@ async function renderAdminPanel() {
   const sel = document.getElementById('admin-barbeiro');
   sel.innerHTML = '<option value="">Selecionar...</option>';
   BARBERS.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
-
-  // Populate client selector in admin (fichas)
-  const cliSel = document.getElementById('admin-cliente-manual');
-  if(cliSel) {
-    const curCli = cliSel.value;
-    cliSel.innerHTML = '<option value="">🎲 Sortear do pool automaticamente</option>';
-    allClientes.forEach(c => {
-      const o = document.createElement('option');
-      o.value = c.nome; o.textContent = c.nome; cliSel.appendChild(o);
-    });
-    if(curCli) cliSel.value = curCli;
-  }
-  // Populate client selector in pool launch
-  const poolCliSel = document.getElementById('pool-cliente');
-  if(poolCliSel) {
-    const cur = poolCliSel.value;
-    poolCliSel.innerHTML = '<option value="">Selecionar cliente...</option>';
-    allClientes.forEach(c => {
-      const o = document.createElement('option');
-      o.value = c.nome; o.textContent = c.nome; poolCliSel.appendChild(o);
-    });
-    if(cur) poolCliSel.value = cur;
-  }
-  // Set default date to today for pool launch
-  const poolDataEl = document.getElementById('pool-data');
-  if(poolDataEl && !poolDataEl.value) poolDataEl.value = new Date().toISOString().split('T')[0];
-  // Render pool table
-  renderAdminPoolTable();
-
   const fichasRows = await loadFichas();
   const fichasMap = {};
   BARBERS.forEach(b => fichasMap[b] = 0);
@@ -657,78 +564,25 @@ async function renderAdminPanel() {
   atualizarPoolPreview();
 }
 
-function gerarAtendimentosAleatorios(qtd) {
-  const now = new Date();
-  const ano = now.getFullYear();
-  const mes = now.getMonth();
-  const hoje = now.getDate();
-  const atendimentos = [];
-  const horas = ['08','09','10','11','12','13','14','15','16','17','18','19'];
-  const minutos = ['00','15','30','45'];
-  for(let i=0; i<qtd; i++) {
-    const dia = Math.floor(Math.random() * hoje) + 1;
-    const dataObj = new Date(ano, mes, dia);
-    const dataStr = dataObj.toISOString().split('T')[0];
-    const hora = horas[Math.floor(Math.random()*horas.length)] + ':' + minutos[Math.floor(Math.random()*minutos.length)];
-    atendimentos.push({data: dataStr, hora});
-  }
-  return atendimentos;
-}
-
 function atualizarPoolPreview() {
   const pool = document.getElementById('admin-pool')?.value;
-  const clienteManual = document.getElementById('admin-cliente-manual')?.value;
-  const qtd = parseInt(document.getElementById('admin-qtd')?.value) || 1;
   const prev = document.getElementById('admin-pool-preview');
-  const atendPrev = document.getElementById('admin-atendimentos-preview');
-  const atendLista = document.getElementById('admin-atendimentos-lista');
   if(!prev) return;
-
-  if(!pool && !clienteManual) {
-    prev.textContent = '';
-    if(atendPrev) atendPrev.style.display = 'none';
+  if(!pool) { prev.textContent = ''; return; }
+  const candidatos = allPlanos.filter(p => p.plano === pool && p.status === 'ativo');
+  if(!candidatos.length) {
+    prev.innerHTML = '<span style="color:var(--danger)">Nenhum cliente ativo neste pool.</span>';
     return;
   }
-
-  let clienteNome = '';
-  if(clienteManual) {
-    clienteNome = clienteManual;
-    prev.innerHTML = `Cliente selecionado: <strong style="color:var(--accent)">${clienteNome}</strong>`;
-  } else if(pool) {
-    const candidatos = allPlanos.filter(p => p.plano === pool && p.status === 'ativo');
-    if(!candidatos.length) {
-      prev.innerHTML = '<span style="color:var(--danger)">Nenhum cliente ativo neste pool.</span>';
-      if(atendPrev) atendPrev.style.display = 'none';
-      return;
-    }
-    const sorteado = candidatos[Math.floor(Math.random()*candidatos.length)];
-    clienteNome = sorteado.cliente;
-    prev.innerHTML = `🎲 Sorteado: <strong style="color:var(--accent)">${clienteNome}</strong> <button class="btn btn-ghost" style="font-size:11px;padding:2px 8px;margin-left:8px" onclick="atualizarPoolPreview()">🔀 Ressortear</button>`;
-  }
-  prev.dataset.cliente = clienteNome;
-
-  if(pool && atendPrev && atendLista) {
-    const atends = gerarAtendimentosAleatorios(qtd);
-    prev.dataset.atendimentos = JSON.stringify(atends);
-    const now = new Date();
-    const mesNome = now.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
-    atendLista.innerHTML = atends.map(a => {
-      const d = new Date(a.data+'T12:00').toLocaleDateString('pt-BR');
-      return `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text)">${d} às ${a.hora}</span>`;
-    }).join('');
-    atendPrev.querySelector('.admin-mes-label') && (atendPrev.querySelector('.admin-mes-label').textContent = 'Atendimentos que serão registrados — '+mesNome);
-    atendPrev.style.display = 'block';
-  } else if(atendPrev) {
-    atendPrev.style.display = 'none';
-    prev.dataset.atendimentos = '';
-  }
+  const sorteado = candidatos[Math.floor(Math.random()*candidatos.length)];
+  prev.innerHTML = `Cliente sorteado: <strong style="color:var(--accent)">${sorteado.cliente}</strong> — o lançamento será registrado para ele. <button class="btn btn-ghost" style="font-size:11px;padding:2px 8px;margin-left:8px" onclick="atualizarPoolPreview()">🔀 Ressortear</button>`;
+  prev.dataset.cliente = sorteado.cliente;
 }
 
 async function adicionarFichasAdmin() {
   const barbeiro = document.getElementById('admin-barbeiro').value;
   const qtd = parseInt(document.getElementById('admin-qtd').value)||0;
   const pool = document.getElementById('admin-pool').value;
-  const clienteManual = document.getElementById('admin-cliente-manual').value;
   if(!barbeiro){ showToast('Selecione um barbeiro', true); return; }
   if(qtd < 1){ showToast('Quantidade deve ser ao menos 1', true); return; }
 
@@ -738,35 +592,26 @@ async function adicionarFichasAdmin() {
   const {error} = await sb.from('fichas').upsert([{barbeiro, fichas:novasFichas}], {onConflict:'barbeiro'});
   if(error){ showToast('Erro: '+error.message, true); return; }
 
-  // Register lancamentos (one per ficha) if pool or client selected
+  // If pool selected, register lancamento for random client
   if(pool) {
     const prev = document.getElementById('admin-pool-preview');
     const clienteNome = prev?.dataset?.cliente;
     if(clienteNome) {
-      // Generate one atendimento per ficha with random date/time in current month
-      let atends = [];
-      try { atends = JSON.parse(prev.dataset.atendimentos||'[]'); } catch(e){}
-      if(!atends.length) atends = gerarAtendimentosAleatorios(qtd);
-      // Ensure we have exactly qtd atendimentos
-      while(atends.length < qtd) atends.push(...gerarAtendimentosAleatorios(qtd - atends.length));
-      atends = atends.slice(0, qtd);
-
-      const inserts = atends.map(a => ({
+      const now = new Date();
+      const hora = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+      const data = now.toISOString().split('T')[0];
+      await sb.from('lancamentos').insert([{
         cliente: clienteNome, barbeiro, servico: pool,
-        pagamento: 'Admin', hora: a.hora, data_atendimento: a.data
-      }));
-      await sb.from('lancamentos').insert(inserts);
+        pagamento: 'Admin', hora, data_atendimento: data
+      }]);
       await loadLancamentos();
     }
   }
 
-  showToast(qtd+' ficha(s) adicionada(s) para '+barbeiro+(pool?' + '+qtd+' atendimento(s) registrado(s)!':'!'));
+  showToast(qtd+' ficha(s) adicionada(s) para '+barbeiro+(pool?' + lançamento registrado!':'!'));
   document.getElementById('admin-qtd').value = '1';
   document.getElementById('admin-motivo').value = '';
   document.getElementById('admin-pool').value = '';
-  document.getElementById('admin-cliente-manual').value = '';
-  document.getElementById('admin-pool-preview').textContent = '';
-  document.getElementById('admin-atendimentos-preview').style.display = 'none';
   await renderAdminPanel();
 }
 
@@ -987,12 +832,8 @@ function populateMesFiltro() {
     const d = l.data_atendimento || (l.created_at ? l.created_at.split('T')[0] : null);
     if(d) meses.add(d.substring(0,7));
   });
-  // Always include current month
-  const now = new Date();
-  const currentMes = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  meses.add(currentMes);
   const sorted = Array.from(meses).sort().reverse();
-  const cur = sel.value || currentMes; // default to current month
+  const cur = sel.value;
   sel.innerHTML = '<option value="">Todo o período</option>';
   sorted.forEach(m => {
     const [y,mo] = m.split('-');
@@ -1001,7 +842,7 @@ function populateMesFiltro() {
     opt.value = m; opt.textContent = label.charAt(0).toUpperCase()+label.slice(1);
     sel.appendChild(opt);
   });
-  sel.value = cur;
+  if(cur) sel.value = cur;
 }
 
 async function renderFichas() {
@@ -1340,160 +1181,6 @@ function showToast(msg, error=false){
 }
 
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
-
-// ─── POOL LAUNCH (Admin) ─────────────────────────────────
-function calcPoolPreview() {
-  const plano = document.getElementById('pool-plano')?.value;
-  const dataVal = document.getElementById('pool-data')?.value;
-  const prev = document.getElementById('pool-preview');
-  const content = document.getElementById('pool-preview-content');
-  if(!prev || !content) return;
-  if(!plano || !dataVal) { prev.style.display='none'; return; }
-
-  const preco = PLAN_PRICES[plano]||0;
-  const ativacao = new Date(dataVal+'T12:00');
-  const ano = ativacao.getFullYear();
-  const mes = ativacao.getMonth(); // 0-based
-
-  // Dias no mês de ativação
-  const ultimoDiaMesAtiv = new Date(ano, mes+1, 0).getDate();
-  const diaAtiv = ativacao.getDate();
-  const diasRestantes = ultimoDiaMesAtiv - diaAtiv + 1;
-  const propAtual = diasRestantes / ultimoDiaMesAtiv;
-  const propProx = 1 - propAtual;
-
-  const valorAtual = preco * propAtual;
-  const valorProx = preco * propProx;
-
-  const mesAtualLabel = ativacao.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-  const proxMes = new Date(ano, mes+1, 1);
-  const mesProxLabel = proxMes.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-
-  const capitalize = s => s.charAt(0).toUpperCase()+s.slice(1);
-  const isFullMonth = diaAtiv === 1;
-
-  if(isFullMonth) {
-    content.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="color:var(--muted)">Valor do plano</span>
-        <span style="color:var(--success);font-weight:600">R$ ${preco.toFixed(2).replace('.',',')}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="color:var(--muted)">Mês de cobrança</span>
-        <span>${capitalize(mesAtualLabel)}</span>
-      </div>
-      <div style="margin-top:10px;font-size:11px;color:var(--muted)">Ativado no 1º dia — sem pro-rata, valor integral no mês atual.</div>`;
-  } else {
-    content.innerHTML = `
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span style="color:var(--muted)">${capitalize(mesAtualLabel)}</span>
-        <span style="color:var(--success);font-weight:600">R$ ${valorAtual.toFixed(2).replace('.',',')}
-          <span style="font-size:11px;color:var(--muted);font-weight:400">(${diasRestantes}/${ultimoDiaMesAtiv} dias)</span>
-        </span>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span style="color:var(--muted)">${capitalize(mesProxLabel)}</span>
-        <span style="color:var(--accent);font-weight:600">R$ ${valorProx.toFixed(2).replace('.',',')}
-          <span style="font-size:11px;color:var(--muted);font-weight:400">(${ultimoDiaMesAtiv-diasRestantes}/${ultimoDiaMesAtiv} dias)</span>
-        </span>
-      </div>
-      <div style="height:1px;background:var(--border);margin:8px 0"></div>
-      <div style="display:flex;justify-content:space-between">
-        <span style="color:var(--muted)">Total (valor do plano)</span>
-        <span>R$ ${preco.toFixed(2).replace('.',',')}</span>
-      </div>
-      <div style="margin-top:10px;font-size:11px;color:var(--muted)">O valor é distribuído proporcionalmente entre os dois meses.</div>`;
-  }
-  prev.style.display = 'block';
-}
-
-async function lancarPlanoPool() {
-  const cliente_nome = document.getElementById('pool-cliente')?.value;
-  const plano = document.getElementById('pool-plano')?.value;
-  const dataVal = document.getElementById('pool-data')?.value;
-  if(!cliente_nome){ showToast('Selecione um cliente', true); return; }
-  if(!plano){ showToast('Selecione um plano', true); return; }
-  if(!dataVal){ showToast('Informe a data de ativação', true); return; }
-
-  const dt = new Date(dataVal+'T12:00');
-  const renovacao = new Date(dt); renovacao.setDate(renovacao.getDate()+30);
-  const cliente_obj = allClientes.find(c=>c.nome===cliente_nome);
-
-  const btn = document.querySelector('[onclick="lancarPlanoPool()"]');
-  if(btn){ btn.textContent='Salvando...'; btn.disabled=true; }
-
-  const {error} = await sb.from('planos').insert([{
-    cliente: cliente_nome,
-    cliente_id: cliente_obj?.id||null,
-    plano,
-    pagamento: 'Admin',
-    status: 'ativo',
-    data_ativacao: dt.toISOString().split('T')[0],
-    data_renovacao: renovacao.toISOString().split('T')[0]
-  }]);
-
-  if(btn){ btn.textContent='⬡ Lançar ao pool'; btn.disabled=false; }
-  if(error){ showToast('Erro: '+error.message, true); return; }
-
-  const preco = PLAN_PRICES[plano]||0;
-  showToast('Plano lançado ao pool! R$ '+preco.toFixed(2).replace('.',',') +' adicionado.');
-
-  // Reset form
-  document.getElementById('pool-cliente').value='';
-  document.getElementById('pool-plano').value='';
-  document.getElementById('pool-data').value=new Date().toISOString().split('T')[0];
-  document.getElementById('pool-preview').style.display='none';
-
-  await loadPlanos();
-  renderPlanos();
-  renderDashboard();
-  renderAdminPoolTable();
-}
-
-function renderAdminPoolTable() {
-  const tbody = document.getElementById('admin-pool-table');
-  const totalEl = document.getElementById('admin-pool-total');
-  if(!tbody) return;
-
-  const now = new Date();
-  const mesCurrent = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const [fy, fm] = mesCurrent.split('-').map(Number);
-  const ultimoDiaMes = new Date(fy, fm, 0).getDate();
-
-  if(!allPlanos.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Nenhum plano ativo</td></tr>'; return; }
-
-  let totalMes = 0;
-  const rows = allPlanos.map(p => {
-    const preco = PLAN_PRICES[p.plano]||0;
-    let valorMes = preco;
-    let prorataTxt = '';
-    if(p.data_ativacao) {
-      const ativ = new Date(p.data_ativacao+'T12:00');
-      const mesAtiv = ativ.getFullYear()*100+(ativ.getMonth()+1);
-      const mesCur = fy*100+fm;
-      if(mesAtiv === mesCur) {
-        const diasRest = ultimoDiaMes - ativ.getDate() + 1;
-        valorMes = preco * (diasRest / ultimoDiaMes);
-        prorataTxt = ` <span style="font-size:10px;color:var(--muted)">(${diasRest}d)</span>`;
-      }
-    }
-    totalMes += valorMes;
-    const statusBadge = p.status==='ativo'
-      ? '<span class="badge badge-success">ativo</span>'
-      : '<span class="badge badge-danger">'+p.status+'</span>';
-    return `<tr>
-      <td style="font-weight:500">${p.cliente}</td>
-      <td>${planBadge(p.plano)}</td>
-      <td style="color:var(--muted)">${fmtDate(p.data_ativacao)}</td>
-      <td style="color:var(--muted)">${fmtDate(p.data_renovacao)}</td>
-      <td style="color:var(--success)">R$ ${valorMes.toFixed(2).replace('.',',')}${prorataTxt}</td>
-      <td>${statusBadge}</td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirPlano('${p.id}','${p.cliente}')">🗑</button></td>
-    </tr>`;
-  });
-  tbody.innerHTML = rows.join('');
-  if(totalEl) totalEl.textContent = 'Total mês: R$ '+totalMes.toFixed(2).replace('.',',');
-}
 
 init();
 </script>
