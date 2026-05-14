@@ -152,10 +152,6 @@ select.form-input option{background:var(--surface2)}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2"/></svg>
       Fichas & Comissões
     </button>
-    <button class="nav-item" onclick="showSection('caixa')">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14"/><path d="M5 10h2M10 10h1"/></svg>
-      Controle de Caixa
-    </button>
     <button class="nav-item" onclick="showSection('admin')">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="12" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/><circle cx="8" cy="11" r="1.2" fill="currentColor" stroke="none"/></svg>
       Admin
@@ -227,7 +223,6 @@ select.form-input option{background:var(--surface2)}
               <option value="Crédito">Crédito</option>
               <option value="Débito">Débito</option>
               <option value="Dinheiro">Dinheiro</option>
-              <option value="Débito Automático">Débito Automático</option>
             </select>
           </div>
         </div>
@@ -307,43 +302,6 @@ select.form-input option{background:var(--surface2)}
       <div style="font-size:12px;color:var(--muted);line-height:1.9">
         <strong style="color:var(--text)">Sistema poker de fichas:</strong><br>
         Cada atendimento gera 1 ficha ao barbeiro responsável. O pool de comissão (50% do total arrecadado) é dividido proporcionalmente às fichas de cada barbeiro no período selecionado.
-      </div>
-    </div>
-
-    <!-- CAIXA -->
-    <div class="section" id="section-caixa">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap">
-        <label style="font-size:12px;color:var(--muted)">Mês:</label>
-        <select class="form-input" id="caixa-mes" onchange="renderCaixa()" style="width:200px;padding:6px 10px">
-          <option value="">Todo o período</option>
-        </select>
-        <span style="font-size:12px;color:var(--muted)">Fonte:</span>
-        <select class="form-input" id="caixa-fonte" onchange="renderCaixa()" style="width:160px;padding:6px 10px">
-          <option value="ambos">Planos + Atendimentos</option>
-          <option value="planos">Só planos</option>
-          <option value="lancamentos">Só atendimentos</option>
-        </select>
-      </div>
-      <div class="grid-4" id="caixa-totais" style="margin-bottom:24px"></div>
-      <div class="grid-2" style="margin-bottom:20px">
-        <div class="table-wrap">
-          <div class="table-header"><span class="table-label">Por forma de pagamento</span></div>
-          <table><thead><tr><th>Forma</th><th>Qtd</th><th>Total (R$)</th><th>%</th></tr></thead>
-          <tbody id="caixa-formas"></tbody></table>
-        </div>
-        <div class="table-wrap">
-          <div class="table-header"><span class="table-label">Por plano</span></div>
-          <table><thead><tr><th>Plano</th><th>Clientes</th><th>Receita (R$)</th></tr></thead>
-          <tbody id="caixa-planos-table"></tbody></table>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <div class="table-header">
-          <span class="table-label">Detalhamento de entradas</span>
-          <span id="caixa-count" style="font-size:12px;color:var(--muted)"></span>
-        </div>
-        <table><thead><tr><th>Data</th><th>Tipo</th><th>Cliente</th><th>Descrição</th><th>Pagamento</th><th>Valor (R$)</th></tr></thead>
-        <tbody id="caixa-detail"></tbody></table>
       </div>
     </div>
 
@@ -439,12 +397,11 @@ select.form-input option{background:var(--surface2)}
     </div>
     <div id="step-2" style="display:none">
       <div class="form-label" style="margin-bottom:10px">Forma de pagamento</div>
-      <div class="payment-options" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr">
+      <div class="payment-options" style="grid-template-columns:1fr 1fr 1fr 1fr">
         <div class="payment-opt" id="pix-opt" onclick="selectPayment('PIX')"><div class="payment-opt-icon">⬡</div><div class="payment-opt-label">PIX</div></div>
         <div class="payment-opt" id="credito-opt" onclick="selectPayment('Crédito')"><div class="payment-opt-icon">▭</div><div class="payment-opt-label">Crédito</div></div>
         <div class="payment-opt" id="debito-opt" onclick="selectPayment('Débito')"><div class="payment-opt-icon">▬</div><div class="payment-opt-label">Débito</div></div>
         <div class="payment-opt" id="dinheiro-opt" onclick="selectPayment('Dinheiro')"><div class="payment-opt-icon">◈</div><div class="payment-opt-label">Dinheiro</div></div>
-        <div class="payment-opt" id="automatico-opt" onclick="selectPayment('Débito Automático')"><div class="payment-opt-icon">🔄</div><div class="payment-opt-label">Déb. Automático</div></div>
       </div>
       <div class="form-actions">
         <button class="btn btn-ghost" onclick="nextStep(1)">Voltar</button>
@@ -720,12 +677,16 @@ async function loadPlanos() {
   const {data, error} = await sb.from('planos').select('*').order('created_at', {ascending:false});
   if(error) throw error;
   allPlanos = data || [];
-  // Auto-expire overdue plans in the database
+  // Auto-expire apenas planos que NÃO são débito automático
+  // Débito automático fica ativo até ser excluído manualmente
   const today = new Date().toISOString().split('T')[0];
-  const vencidos = allPlanos.filter(p => p.status === 'ativo' && p.data_renovacao && p.data_renovacao < today);
+  const vencidos = allPlanos.filter(p =>
+    p.status === 'ativo' &&
+    p.data_renovacao && p.data_renovacao < today &&
+    p.pagamento !== 'Débito Automático'
+  );
   if(vencidos.length) {
     await Promise.all(vencidos.map(p => sb.from('planos').update({status:'vencido'}).eq('id', p.id)));
-    // Refresh after update
     const {data:d2} = await sb.from('planos').select('*').order('created_at', {ascending:false});
     allPlanos = d2 || [];
   }
@@ -836,24 +797,17 @@ function renderPlanos() {
   renderPoolCards('pool-cards-planos');
   const tbody = document.getElementById('planos-table');
   if(!allPlanos.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Nenhum plano ativo</td></tr>'; return; }
-  tbody.innerHTML = allPlanos.map(p=>{
-    const vencido = p.status === 'vencido';
-    const statusBadge = vencido
-      ? '<span class="badge badge-danger">vencido</span>'
-      : p.status === 'ativo'
-        ? '<span class="badge badge-success">ativo</span>'
-        : `<span class="badge badge-warning">${p.status}</span>`;
-    const rowStyle = vencido ? 'background:rgba(224,85,85,0.04)' : '';
-    return `<tr style="${rowStyle}">
+  tbody.innerHTML = allPlanos.map(p=>`
+    <tr>
       <td style="font-weight:500">${p.cliente}</td>
       <td>${planBadge(p.plano)}</td>
-      <td>${p.pagamento||'—'}</td>
+      <td>${p.pagamento}</td>
       <td>${fmtDate(p.data_ativacao)}</td>
-      <td style="${vencido?'color:var(--danger)':''}">${fmtDate(p.data_renovacao)}</td>
-      <td>${statusBadge}</td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px${vencido?';border-color:var(--accent);color:var(--accent)':''}" onclick="renovarPlano('${p.id}','${p.plano}')">${vencido?'⚠️ Renovar':'Renovar'}</button></td>
+      <td>${fmtDate(p.data_renovacao)}</td>
+      <td><span class="badge badge-success">${p.status}</span></td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="renovarPlano('${p.id}','${p.plano}')">Renovar</button></td>
       <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirPlano('${p.id}','${p.cliente}')">🗑</button></td>
-    </tr>`;}).join('');
+    </tr>`).join('');
 }
 
 async function renderBarbeiros() {
@@ -1148,14 +1102,13 @@ function showSection(id) {
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('section-'+id).classList.add('active');
-  const titles={dashboard:'Dashboard',lancamentos:'Lançamentos',planos:'Planos & Pools',clientes:'Clientes',barbeiros:'Barbeiros',fichas:'Fichas & Comissões',caixa:'Controle de Caixa',admin:'Admin'};
+  const titles={dashboard:'Dashboard',lancamentos:'Lançamentos',planos:'Planos & Pools',clientes:'Clientes',barbeiros:'Barbeiros',fichas:'Fichas & Comissões',admin:'Admin'};
   document.getElementById('topbar-title').textContent = titles[id]||id;
   document.querySelectorAll('.nav-item').forEach(b=>{ if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('active'); });
   if(id==='clientes') renderClientes();
   if(id==='planos') renderPlanos();
   if(id==='barbeiros') renderBarbeiros();
   if(id==='fichas') renderFichas();
-  if(id==='caixa') renderCaixa();
   if(id==='admin') {
     if(adminDesbloqueado) { document.getElementById('admin-lock').style.display='none'; document.getElementById('admin-panel').style.display='block'; renderAdminPanel(); }
     else { document.getElementById('admin-lock').style.display='flex'; document.getElementById('admin-panel').style.display='none'; }
@@ -1183,8 +1136,8 @@ function nextStep(n){ showStep(n); }
 
 function selectPayment(p){
   selectedPayment=p;
-  ['PIX','Crédito','Débito','Dinheiro','Débito Automático'].forEach(x=>{
-    const key = x==='Débito Automático' ? 'automatico' : x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  ['PIX','Crédito','Débito','Dinheiro'].forEach(x=>{
+    const key = x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     const el = document.getElementById(key+'-opt');
     if(el) el.classList.toggle('selected', x===p);
   });
@@ -1222,139 +1175,6 @@ function populateClienteSelects(){
 }
 
 function filtrarClientes(v){ renderClientes(v); }
-
-// ─── CAIXA ───────────────────────────────────────────────
-function populateCaixaMes() {
-  const sel = document.getElementById('caixa-mes'); if(!sel) return;
-  const meses = new Set();
-  // From lancamentos
-  allLancamentos.forEach(l => {
-    const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:null);
-    if(d) meses.add(d.substring(0,7));
-  });
-  // From planos (by ativacao date)
-  allPlanos.forEach(p => { if(p.data_ativacao) meses.add(p.data_ativacao.substring(0,7)); });
-  const now = new Date();
-  const mesAtual = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  meses.add(mesAtual);
-  const sorted = Array.from(meses).sort().reverse();
-  const cur = sel.value || mesAtual;
-  sel.innerHTML = '<option value="">Todo o período</option>';
-  sorted.forEach(m => {
-    const [y,mo] = m.split('-');
-    const label = new Date(Number(y),Number(mo)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-    const opt = document.createElement('option');
-    opt.value = m; opt.textContent = label.charAt(0).toUpperCase()+label.slice(1);
-    sel.appendChild(opt);
-  });
-  sel.value = cur;
-}
-
-function renderCaixa() {
-  populateCaixaMes();
-  const mes = document.getElementById('caixa-mes')?.value || '';
-  const fonte = document.getElementById('caixa-fonte')?.value || 'ambos';
-
-  // Build entries list
-  const entries = [];
-
-  // From planos (activation = receita do plano)
-  if(fonte === 'planos' || fonte === 'ambos') {
-    allPlanos.forEach(p => {
-      const d = p.data_ativacao || '';
-      if(mes && !d.startsWith(mes)) return;
-      entries.push({
-        data: d, tipo: 'Plano', cliente: p.cliente,
-        descricao: (PLAN_NAMES[p.plano]||p.plano) + ' — ' + (p.pagamento||'—'),
-        pagamento: p.pagamento||'—',
-        valor: PLAN_PRICES[p.plano]||0
-      });
-    });
-  }
-
-  // From lancamentos (each = 1 atendimento, no fixed price — mark as 0 for now unless you add price later)
-  if(fonte === 'lancamentos' || fonte === 'ambos') {
-    allLancamentos.forEach(l => {
-      const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
-      if(mes && !d.startsWith(mes)) return;
-      if(!l.pagamento || l.pagamento === 'Admin') return; // skip admin entries
-      entries.push({
-        data: d, tipo: 'Atendimento', cliente: l.cliente,
-        descricao: (PLAN_NAMES[l.servico]||l.servico||'—') + ' c/ ' + (l.barbeiro||'—'),
-        pagamento: l.pagamento||'—',
-        valor: PLAN_PRICES[l.servico]||0
-      });
-    });
-  }
-
-  entries.sort((a,b) => b.data.localeCompare(a.data));
-
-  const totalGeral = entries.reduce((s,e)=>s+e.valor,0);
-  const pool = totalGeral * 0.5;
-
-  // Totals cards
-  const totaisEl = document.getElementById('caixa-totais');
-  if(totaisEl) totaisEl.innerHTML = `
-    <div class="card"><div class="card-title">Receita total</div><div class="card-value" style="color:var(--success)">R$ ${totalGeral.toFixed(2).replace('.',',')}</div></div>
-    <div class="card"><div class="card-title">Pool comissão (50%)</div><div class="card-value" style="color:var(--accent)">R$ ${pool.toFixed(2).replace('.',',')}</div></div>
-    <div class="card"><div class="card-title">Entradas</div><div class="card-value">${entries.length}</div></div>
-    <div class="card"><div class="card-title">Ticket médio</div><div class="card-value">R$ ${entries.length?((totalGeral/entries.length).toFixed(2).replace('.',',')):('0,00')}</div></div>`;
-
-  // By payment method
-  const formasMap = {};
-  entries.forEach(e => {
-    if(!formasMap[e.pagamento]) formasMap[e.pagamento] = {qtd:0, total:0};
-    formasMap[e.pagamento].qtd++;
-    formasMap[e.pagamento].total += e.valor;
-  });
-  const formasSorted = Object.entries(formasMap).sort((a,b)=>b[1].total-a[1].total);
-  const formasEl = document.getElementById('caixa-formas');
-  if(formasEl) formasEl.innerHTML = formasSorted.length
-    ? formasSorted.map(([f,v]) => {
-        const pct = totalGeral>0 ? Math.round((v.total/totalGeral)*100) : 0;
-        const icon = f==='PIX'?'⬡':f==='Crédito'?'▭':f==='Débito'?'▬':f==='Débito Automático'?'🔄':'◈';
-        return `<tr>
-          <td><span style="margin-right:6px">${icon}</span>${f}</td>
-          <td>${v.qtd}</td>
-          <td style="color:var(--success)">R$ ${v.total.toFixed(2).replace('.',',')}</td>
-          <td><div style="display:flex;align-items:center;gap:6px">
-            <div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:${pct}%;height:100%;background:var(--accent);border-radius:2px"></div></div>
-            <span style="font-size:11px;color:var(--muted)">${pct}%</span>
-          </div></td>
-        </tr>`;
-      }).join('')
-    : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">Sem entradas</td></tr>';
-
-  // By plan type
-  const planosMap = {};
-  entries.filter(e=>e.tipo==='Plano').forEach(e => {
-    const k = e.descricao.split(' — ')[0];
-    if(!planosMap[k]) planosMap[k] = {qtd:0, total:0};
-    planosMap[k].qtd++;
-    planosMap[k].total += e.valor;
-  });
-  const planosEl = document.getElementById('caixa-planos-table');
-  if(planosEl) planosEl.innerHTML = Object.entries(planosMap).length
-    ? Object.entries(planosMap).sort((a,b)=>b[1].total-a[1].total).map(([n,v]) =>
-        `<tr><td>${n}</td><td>${v.qtd}</td><td style="color:var(--success)">R$ ${v.total.toFixed(2).replace('.',',')}</td></tr>`
-      ).join('')
-    : '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px">Sem planos</td></tr>';
-
-  // Detail table
-  const countEl = document.getElementById('caixa-count');
-  if(countEl) countEl.textContent = entries.length + ' registro(s)';
-  const detailEl = document.getElementById('caixa-detail');
-  if(detailEl) detailEl.innerHTML = entries.length
-    ? entries.map(e => `<tr>
-        <td style="color:var(--muted)">${fmtDate(e.data)}</td>
-        <td><span class="badge ${e.tipo==='Plano'?'badge-success':'badge-info'}" style="font-size:10px">${e.tipo}</span></td>
-        <td>${e.cliente}</td>
-        <td style="color:var(--muted);font-size:12px">${e.descricao}</td>
-        <td>${e.pagamento==='Débito Automático'?'🔄 Déb. Auto':e.pagamento==='PIX'?'⬡ PIX':e.pagamento==='Crédito'?'▭ Crédito':e.pagamento==='Débito'?'▬ Débito':'◈ '+e.pagamento}</td>
-        <td style="color:var(--success);font-weight:500">R$ ${e.valor.toFixed(2).replace('.',',')}</td>
-      </tr>`).join('')
-    : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Nenhuma entrada no período</td></tr>';
-}
 
 // ─── HELPERS ─────────────────────────────────────────────
 function planBadge(plano){
