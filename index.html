@@ -10,7 +10,7 @@
 :root{
   --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2e2e2e;
   --accent:#c9a84c;--accent2:#a07830;--text:#f0ece4;--muted:#888;
-  --success:#4caf7d;--danger:#e05555;--info:#5b9bd5;
+  --success:#4caf7d;--danger:#e05555;--info:#5b9bd5;--warning:#e0a030;
   --pool-hair:#c9a84c;--pool-beard:#5b9bd5;--pool-both:#9b6fd4;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -19,12 +19,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .logo-area{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
 .logo-name{font-family:'Bebas Neue',cursive;font-size:26px;letter-spacing:0.12em;color:var(--accent)}
 .logo-sub{font-size:11px;color:var(--muted);letter-spacing:0.08em;margin-top:2px}
-.nav{padding:12px 0;flex:1}
+.nav{padding:12px 0;flex:1;overflow-y:auto}
 .nav-group-label{font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 20px 4px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--muted);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:color 0.15s,background 0.15s}
 .nav-item:hover{color:var(--text);background:rgba(255,255,255,0.04)}
 .nav-item.active{color:var(--accent);background:rgba(201,168,76,0.08);font-weight:500;border-left:2px solid var(--accent)}
 .nav-item svg{width:15px;height:15px;flex-shrink:0}
+.notif-badge{background:var(--danger);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;margin-left:auto}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .topbar-title{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:0.1em;color:var(--text)}
@@ -38,6 +39,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-primary:hover{opacity:0.88}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
 .btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+.btn-ghost:disabled{opacity:0.4;cursor:not-allowed}
 .btn-danger{background:var(--danger);color:#fff;font-weight:500}
 .btn-success{background:var(--success);color:#fff;font-weight:500}
 .content{flex:1;overflow-y:auto;padding:24px 28px}
@@ -46,9 +48,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
 .card-title{font-size:11px;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:4px}
 .card-value{font-size:26px;font-family:'Bebas Neue',cursive;letter-spacing:0.05em}
-.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
 .pool-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
 .pool-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
 .pool-badge.hair{background:rgba(201,168,76,0.15);color:var(--pool-hair)}
@@ -95,12 +97,12 @@ select.form-input option{background:var(--surface2)}
 .step{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background 0.2s}
 .step.done{background:var(--accent)}
 .step.active{background:var(--accent);opacity:0.5}
-.payment-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.payment-options{display:grid;gap:10px;margin-bottom:14px}
 .payment-opt{border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;text-align:center;transition:border-color 0.15s,background 0.15s}
 .payment-opt:hover,.payment-opt.selected{border-color:var(--accent);background:rgba(201,168,76,0.06)}
 .payment-opt-icon{font-size:20px;margin-bottom:4px}
 .payment-opt-label{font-size:12px;font-weight:500}
-.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:12px 18px;font-size:13px;z-index:200;display:none;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:12px 18px;font-size:13px;z-index:200;display:none;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:360px}
 .toast.show{display:flex}
 .toast-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
 .toast.error-toast{border-color:var(--danger)}
@@ -114,7 +116,11 @@ select.form-input option{background:var(--surface2)}
 .loading-row{text-align:center;padding:24px;color:var(--muted);font-size:13px}
 .chip{display:inline-block;width:20px;height:20px;border-radius:50%;text-align:center;line-height:20px;font-size:10px;margin:1px}
 .chip-gold{background:var(--accent);color:#111;font-weight:500}
-.chip-empty{background:var(--border);color:var(--muted)}
+/* Alert banner */
+.alert-banner{background:rgba(224,85,85,0.12);border:1px solid rgba(224,85,85,0.3);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;display:flex;align-items:flex-start;gap:10px}
+.alert-banner-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert-item{padding:3px 0;color:var(--text)}
+.alert-item span{color:var(--danger);font-weight:500}
 </style>
 </head>
 <body>
@@ -138,10 +144,15 @@ select.form-input option{background:var(--surface2)}
     <button class="nav-item" onclick="showSection('planos')">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h5"/></svg>
       Planos / Pools
+      <span class="notif-badge" id="nav-vencidos-badge" style="display:none">0</span>
     </button>
     <button class="nav-item" onclick="showSection('clientes')">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
       Clientes
+    </button>
+    <button class="nav-item" onclick="showSection('caixa')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14"/><path d="M5 10h2M10 10h1"/></svg>
+      Controle de Caixa
     </button>
     <div class="nav-group-label">Equipe</div>
     <button class="nav-item" onclick="showSection('barbeiros')">
@@ -151,10 +162,6 @@ select.form-input option{background:var(--surface2)}
     <button class="nav-item" onclick="showSection('fichas')">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2"/></svg>
       Fichas & Comissões
-    </button>
-    <button class="nav-item" onclick="showSection('caixa')">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="14" height="10" rx="1.5"/><path d="M1 7h14"/><circle cx="8" cy="11" r="1.5" fill="currentColor" stroke="none"/></svg>
-      Caixa
     </button>
     <button class="nav-item" onclick="showSection('admin')">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="12" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/><circle cx="8" cy="11" r="1.2" fill="currentColor" stroke="none"/></svg>
@@ -177,16 +184,12 @@ select.form-input option{background:var(--surface2)}
 
     <!-- DASHBOARD -->
     <div class="section active" id="section-dashboard">
+      <div id="dash-alertas"></div>
       <div class="grid-4">
         <div class="card"><div class="card-title">Clientes cadastrados</div><div class="card-value" id="d-clientes">—</div></div>
         <div class="card"><div class="card-title">Planos ativos</div><div class="card-value" id="d-planos">—</div></div>
-        <div class="card"><div class="card-title">Pool total acumulado</div><div class="card-value" id="d-pool" style="color:var(--success)">—</div></div>
-        <div class="card"><div class="card-title">Fichas em circulação</div><div class="card-value" id="d-fichas">—</div></div>
-      </div>
-      <div class="grid-3" style="margin-bottom:24px">
-        <div class="card" style="border-left:3px solid var(--success)"><div class="card-title">Caixa — entradas do mês</div><div class="card-value" id="d-cx-ent" style="color:var(--success)">—</div></div>
-        <div class="card" style="border-left:3px solid var(--danger)"><div class="card-title">Caixa — saídas do mês</div><div class="card-value" id="d-cx-sai" style="color:var(--danger)">—</div></div>
-        <div class="card" style="border-left:3px solid var(--accent)"><div class="card-title">Saldo do mês</div><div class="card-value" id="d-cx-saldo">—</div></div>
+        <div class="card"><div class="card-title">Pool total mensal</div><div class="card-value" id="d-pool" style="color:var(--success)">—</div></div>
+        <div class="card"><div class="card-title">Planos vencidos</div><div class="card-value" id="d-vencidos" style="color:var(--danger)">—</div></div>
       </div>
       <div class="grid-3" id="pool-cards-dash"></div>
       <div class="table-wrap">
@@ -210,7 +213,7 @@ select.form-input option{background:var(--surface2)}
             <select class="form-input" id="lan-barbeiro">
               <option value="">Selecionar barbeiro...</option>
               <option>Kayky</option><option>Luann</option><option>Thiago</option>
-              <option>Pedro</option><option>Patrezio</option><option>Patrick</option>
+              <option>Pedro</option><option>Patrezio</option><option>Patrick</option><option>Joabe</option>
             </select>
           </div>
         </div>
@@ -232,6 +235,7 @@ select.form-input option{background:var(--surface2)}
               <option value="Crédito">Crédito</option>
               <option value="Débito">Débito</option>
               <option value="Dinheiro">Dinheiro</option>
+              <option value="Débito Automático">Débito Automático</option>
             </select>
           </div>
         </div>
@@ -264,22 +268,15 @@ select.form-input option{background:var(--surface2)}
 
     <!-- PLANOS -->
     <div class="section" id="section-planos">
+      <div id="planos-alertas"></div>
       <div class="grid-3" id="pool-cards-planos"></div>
-      <div style="display:flex;gap:16px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
-        <span style="font-size:11px;color:var(--muted)">Legenda:</span>
-        <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--success);display:inline-block"></span>Ativo</span>
-        <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>Vence em breve</span>
-        <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#e08c3a;display:inline-block"></span>Vencido</span>
-        <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--danger);display:inline-block"></span>Cancelado</span>
-        <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--info);display:inline-block"></span>Déb. Automático</span>
-      </div>
       <div class="table-wrap">
         <div class="table-header">
           <span class="table-label">Todos os planos</span>
           <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openModal('modal-ativar')">+ Ativar plano</button>
         </div>
-        <table><thead><tr><th>Cliente</th><th>Plano</th><th>Pagamento</th><th>Ativação</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr></thead>
-        <tbody id="planos-table"><tr><td colspan="7" class="loading-row">Carregando...</td></tr></tbody></table>
+        <table><thead><tr><th>Cliente</th><th>Plano</th><th>Pagamento</th><th>Ativação</th><th>Renovação</th><th>Status</th><th></th><th></th></tr></thead>
+        <tbody id="planos-table"><tr><td colspan="8" class="loading-row">Carregando...</td></tr></tbody></table>
       </div>
     </div>
 
@@ -292,6 +289,41 @@ select.form-input option{background:var(--surface2)}
       <div class="table-wrap">
         <table><thead><tr><th>Nome</th><th>Telefone</th><th>Plano ativo</th><th>Cadastro</th><th>Atendimentos</th><th></th><th></th><th></th></tr></thead>
         <tbody id="clientes-table"><tr><td colspan="8" class="loading-row">Carregando...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- CAIXA -->
+    <div class="section" id="section-caixa">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+        <label style="font-size:12px;color:var(--muted)">Mês:</label>
+        <select class="form-input" id="caixa-mes" onchange="renderCaixa()" style="width:200px;padding:6px 10px"></select>
+        <label style="font-size:12px;color:var(--muted)">Fonte:</label>
+        <select class="form-input" id="caixa-fonte" onchange="renderCaixa()" style="width:180px;padding:6px 10px">
+          <option value="ambos">Planos + Atendimentos</option>
+          <option value="planos">Só planos</option>
+          <option value="lancamentos">Só atendimentos</option>
+        </select>
+      </div>
+      <div class="grid-4" id="caixa-totais" style="margin-bottom:20px"></div>
+      <div class="grid-2">
+        <div class="table-wrap">
+          <div class="table-header"><span class="table-label">Por forma de pagamento</span></div>
+          <table><thead><tr><th>Forma</th><th>Qtd</th><th>Total (R$)</th><th>%</th></tr></thead>
+          <tbody id="caixa-formas"></tbody></table>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header"><span class="table-label">Por plano</span></div>
+          <table><thead><tr><th>Plano</th><th>Clientes</th><th>Receita (R$)</th></tr></thead>
+          <tbody id="caixa-planos-table"></tbody></table>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-label">Detalhamento de entradas</span>
+          <span id="caixa-count" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <table><thead><tr><th>Data</th><th>Tipo</th><th>Cliente</th><th>Descrição</th><th>Pagamento</th><th>Valor (R$)</th></tr></thead>
+        <tbody id="caixa-detail"></tbody></table>
       </div>
     </div>
 
@@ -309,7 +341,7 @@ select.form-input option{background:var(--surface2)}
         </select>
         <span id="fichas-periodo-badge" style="font-size:12px;color:var(--muted)"></span>
       </div>
-      <div class="grid-3" style="margin-bottom:24px" id="fichas-summary"></div>
+      <div class="grid-3" id="fichas-summary"></div>
       <div class="table-wrap">
         <div class="table-header"><span class="table-label">Distribuição por barbeiro</span></div>
         <table><thead><tr><th>Barbeiro</th><th>Fichas no período</th><th>% do pool</th><th>Comissão estimada (R$)</th><th>Fichas visuais</th></tr></thead>
@@ -319,70 +351,6 @@ select.form-input option{background:var(--surface2)}
       <div style="font-size:12px;color:var(--muted);line-height:1.9">
         <strong style="color:var(--text)">Sistema poker de fichas:</strong><br>
         Cada atendimento gera 1 ficha ao barbeiro responsável. O pool de comissão (50% do total arrecadado) é dividido proporcionalmente às fichas de cada barbeiro no período selecionado.
-      </div>
-    </div>
-
-    <!-- CAIXA -->
-    <div class="section" id="section-caixa">
-      <div class="grid-4" style="margin-bottom:24px">
-        <div class="card"><div class="card-title">Entradas do mês</div><div class="card-value" id="cx-entradas" style="color:var(--success)">—</div></div>
-        <div class="card"><div class="card-title">Saídas do mês</div><div class="card-value" id="cx-saidas" style="color:var(--danger)">—</div></div>
-        <div class="card"><div class="card-title">Saldo do mês</div><div class="card-value" id="cx-saldo">—</div></div>
-        <div class="card"><div class="card-title">Saldo de hoje</div><div class="card-value" id="cx-hoje">—</div></div>
-      </div>
-      <div class="table-wrap" style="margin-bottom:20px">
-        <div class="table-header"><span class="table-label">Novo lançamento</span></div>
-        <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:14px;align-items:end">
-          <div class="form-group">
-            <label class="form-label">Tipo</label>
-            <select class="form-input" id="cx-tipo" onchange="updateCxCategoria()">
-              <option value="entrada">⬆ Entrada</option>
-              <option value="saida">⬇ Saída</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Categoria</label>
-            <select class="form-input" id="cx-categoria">
-              <option value="plano">Plano mensal</option>
-              <option value="avulso">Atendimento avulso</option>
-              <option value="produto">Venda de produto</option>
-              <option value="outro_entrada">Outro (entrada)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Valor (R$)</label>
-            <input type="number" class="form-input" id="cx-valor" min="0.01" step="0.01" placeholder="0,00">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Descrição</label>
-            <input type="text" class="form-input" id="cx-descricao" placeholder="ex: João — Cabelo">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Data</label>
-            <input type="date" class="form-input" id="cx-data">
-          </div>
-        </div>
-        <div style="padding:0 20px 20px;display:flex;justify-content:flex-end">
-          <button class="btn btn-success" onclick="lancarCaixa()">+ Registrar</button>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <div class="table-header" style="flex-wrap:wrap;gap:10px">
-          <span class="table-label">Histórico de caixa</span>
-          <div style="display:flex;gap:10px;align-items:center">
-            <select class="form-input" id="cx-mes-filtro" onchange="renderCaixa()" style="padding:5px 10px;font-size:12px"></select>
-            <select class="form-input" id="cx-tipo-filtro" onchange="renderCaixa()" style="padding:5px 10px;font-size:12px;width:130px">
-              <option value="">Tudo</option>
-              <option value="entrada">Entradas</option>
-              <option value="saida">Saídas</option>
-            </select>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th></th></tr></thead>
-          <tbody id="cx-tabela"><tr><td colspan="6" class="loading-row">Carregando...</td></tr></tbody>
-        </table>
-        <div id="cx-totais" style="padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:24px;font-size:12px;color:var(--muted)"></div>
       </div>
     </div>
 
@@ -402,49 +370,47 @@ select.form-input option{background:var(--surface2)}
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
           <div>
             <div style="font-size:18px;font-weight:600">Painel Admin</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:3px">Ajuste manual de fichas por barbeiro</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">Ajuste manual de fichas e lançamentos</div>
           </div>
           <button class="btn btn-ghost" style="font-size:12px" onclick="bloquearAdmin()">🔒 Bloquear</button>
         </div>
         <div class="grid-3" id="admin-fichas-cards" style="margin-bottom:24px"></div>
         <div class="table-wrap" style="margin-bottom:20px">
-          <div class="table-header"><span class="table-label">Adicionar fichas manualmente</span></div>
+          <div class="table-header"><span class="table-label">Adicionar fichas / atendimentos</span></div>
           <div style="padding:20px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
-            <div class="form-group" style="min-width:140px;flex:1">
+            <div class="form-group" style="min-width:130px;flex:1">
               <label class="form-label">Barbeiro</label>
-              <select class="form-input" id="admin-barbeiro">
-                <option value="">Selecionar...</option>
-              </select>
+              <select class="form-input" id="admin-barbeiro"><option value="">Selecionar...</option></select>
             </div>
-            <div class="form-group" style="min-width:160px;flex:1">
-              <label class="form-label">Pool (registrar lançamento)</label>
-              <select class="form-input" id="admin-pool" onchange="atualizarPoolPreview()">
-                <option value="">Sem pool — só ficha</option>
+            <div class="form-group" style="min-width:150px;flex:1">
+              <label class="form-label">Cliente</label>
+              <select class="form-input" id="admin-cliente"><option value="">Selecionar cliente...</option></select>
+            </div>
+            <div class="form-group" style="min-width:140px;flex:1">
+              <label class="form-label">Serviço</label>
+              <select class="form-input" id="admin-servico">
+                <option value="">Selecionar...</option>
                 <option value="cabelo">Cabelo</option>
                 <option value="barba">Barba</option>
                 <option value="cabelo_barba">Cabelo + Barba</option>
               </select>
             </div>
-            <div class="form-group" style="width:100px">
-              <label class="form-label">Fichas</label>
+            <div class="form-group" style="width:90px">
+              <label class="form-label">Qtd. fichas</label>
               <input type="number" class="form-input" id="admin-qtd" min="1" max="50" value="1">
-            </div>
-            <div class="form-group" style="width:160px">
-              <label class="form-label">Motivo (opcional)</label>
-              <input type="text" class="form-input" id="admin-motivo" placeholder="ex: ajuste">
             </div>
             <button class="btn btn-success" onclick="adicionarFichasAdmin()" style="margin-bottom:2px">+ Adicionar</button>
           </div>
-          <div id="admin-pool-preview" style="padding:0 20px 16px;font-size:12px;color:var(--muted);min-height:20px"></div>
+          <div style="padding:0 20px 14px;font-size:12px;color:var(--muted)">Cada ficha = 1 lançamento com data/hora aleatória no mês atual.</div>
         </div>
-        <div class="table-wrap" style="margin-bottom:20px">
+        <div class="table-wrap">
           <div class="table-header"><span class="table-label">Remover fichas por barbeiro</span></div>
           <table><thead><tr><th>Barbeiro</th><th>Fichas atuais</th><th>Remover 1</th><th>Zerar tudo</th></tr></thead>
           <tbody id="admin-excluir-table"></tbody></table>
         </div>
         <div class="sep"></div>
         <div style="font-size:12px;color:var(--muted);line-height:1.9">
-          <strong style="color:var(--text)">Atenção:</strong> ajustes feitos aqui são diretos na tabela de fichas. Use para correções pontuais.
+          <strong style="color:var(--text)">Atenção:</strong> ajustes feitos aqui são diretos na tabela de fichas. Use apenas para correções pontuais.
         </div>
       </div>
     </div>
@@ -478,11 +444,12 @@ select.form-input option{background:var(--surface2)}
     </div>
     <div id="step-2" style="display:none">
       <div class="form-label" style="margin-bottom:10px">Forma de pagamento</div>
-      <div class="payment-options" style="grid-template-columns:1fr 1fr 1fr 1fr">
+      <div class="payment-options" style="grid-template-columns:repeat(5,1fr)">
         <div class="payment-opt" id="pix-opt" onclick="selectPayment('PIX')"><div class="payment-opt-icon">⬡</div><div class="payment-opt-label">PIX</div></div>
         <div class="payment-opt" id="credito-opt" onclick="selectPayment('Crédito')"><div class="payment-opt-icon">▭</div><div class="payment-opt-label">Crédito</div></div>
         <div class="payment-opt" id="debito-opt" onclick="selectPayment('Débito')"><div class="payment-opt-icon">▬</div><div class="payment-opt-label">Débito</div></div>
         <div class="payment-opt" id="dinheiro-opt" onclick="selectPayment('Dinheiro')"><div class="payment-opt-icon">◈</div><div class="payment-opt-label">Dinheiro</div></div>
+        <div class="payment-opt" id="automatico-opt" onclick="selectPayment('Débito Automático')"><div class="payment-opt-icon">🔄</div><div class="payment-opt-label">Déb. Auto</div></div>
       </div>
       <div class="form-actions">
         <button class="btn btn-ghost" onclick="nextStep(1)">Voltar</button>
@@ -534,11 +501,11 @@ select.form-input option{background:var(--surface2)}
     <div class="modal-title">Editar cliente</div>
     <input type="hidden" id="ec-id">
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Nome completo</label><input class="form-input" id="ec-nome" placeholder="João Silva"></div>
-      <div class="form-group"><label class="form-label">Telefone / WhatsApp</label><input class="form-input" id="ec-tel" placeholder="(69) 99999-0000"></div>
+      <div class="form-group"><label class="form-label">Nome completo</label><input class="form-input" id="ec-nome"></div>
+      <div class="form-group"><label class="form-label">Telefone / WhatsApp</label><input class="form-input" id="ec-tel"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">E-mail (opcional)</label><input class="form-input" id="ec-email" placeholder="joao@email.com"></div>
+      <div class="form-group"><label class="form-label">E-mail (opcional)</label><input class="form-input" id="ec-email"></div>
       <div class="form-group"><label class="form-label">Data de nascimento</label><input type="date" class="form-input" id="ec-nasc"></div>
     </div>
     <div class="form-actions">
@@ -582,284 +549,156 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const BARBERS = ['Kayky','Luann','Thiago','Pedro','Patrezio','Patrick','Joabe'];
 const BARBER_COLORS = ['#c9a84c','#5b9bd5','#4caf7d','#e05555','#9b6fd4','#e07a5f','#20b2aa'];
 const PLAN_PRICES = {cabelo:79.90, barba:89.90, cabelo_barba:159.90};
-const PLAN_NAMES = {cabelo:'Cabelo', barba:'Barba', cabelo_barba:'Cabelo + Barba'};
-const PLAN_DUR = {cabelo:'30 min', barba:'30 min', cabelo_barba:'60 min'};
+const PLAN_NAMES  = {cabelo:'Cabelo', barba:'Barba', cabelo_barba:'Cabelo + Barba'};
+const PLAN_DUR    = {cabelo:'30 min', barba:'30 min', cabelo_barba:'60 min'};
+const PAY_ICON    = {'PIX':'⬡','Crédito':'▭','Débito':'▬','Dinheiro':'◈','Débito Automático':'🔄'};
 
-let currentStep = 1;
-let selectedPayment = '';
-let allClientes = [];
-let allPlanos = [];
-let allLancamentos = [];
-let allCaixa = [];
+let currentStep = 1, selectedPayment = '';
+let allClientes = [], allPlanos = [], allLancamentos = [];
 
-// ─── ADMIN ───
-const ADMIN_SENHA = '@Radd0000';
-let adminDesbloqueado = false;
-
-function verificarSenhaAdmin() {
-  const v = document.getElementById('admin-senha-input').value;
-  const erro = document.getElementById('admin-senha-erro');
-  if(v === ADMIN_SENHA) {
-    adminDesbloqueado = true;
-    document.getElementById('admin-lock').style.display = 'none';
-    document.getElementById('admin-panel').style.display = 'block';
-    document.getElementById('admin-senha-input').value = '';
-    erro.style.display = 'none';
-    renderAdminPanel();
-  } else {
-    erro.style.display = 'block';
-    document.getElementById('admin-senha-input').value = '';
-  }
-}
-
-function bloquearAdmin() {
-  adminDesbloqueado = false;
-  document.getElementById('admin-lock').style.display = 'flex';
-  document.getElementById('admin-panel').style.display = 'none';
-}
-
-async function renderAdminPanel() {
-  const sel = document.getElementById('admin-barbeiro');
-  sel.innerHTML = '<option value="">Selecionar...</option>';
-  BARBERS.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
-  const fichasRows = await loadFichas();
-  const fichasMap = {};
-  BARBERS.forEach(b => fichasMap[b] = 0);
-  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
-  const cards = document.getElementById('admin-fichas-cards');
-  if(cards) cards.innerHTML = BARBERS.map((b,i) => `
-    <div class="card" style="border-left:3px solid ${BARBER_COLORS[i]}">
-      <div class="card-title">${b}</div>
-      <div class="card-value">${fichasMap[b]||0} <span style="font-size:14px;color:var(--muted)">fichas</span></div>
-    </div>`).join('');
-  // Render excluir table
-  const etbody = document.getElementById('admin-excluir-table');
-  if(etbody) etbody.innerHTML = BARBERS.map((b,i) => {
-    const f = fichasMap[b]||0;
-    return `<tr>
-      <td style="font-weight:500;color:${BARBER_COLORS[i]}">${b}</td>
-      <td>${f}</td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--danger);border-color:rgba(224,85,85,0.3)" ${f===0?'disabled':''} onclick="removerFichaAdmin('${b}',${f})">−1 ficha</button></td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--danger);border-color:rgba(224,85,85,0.3)" ${f===0?'disabled':''} onclick="zerarFichasAdmin('${b}')">Zerar</button></td>
-    </tr>`;
-  }).join('');
-  atualizarPoolPreview();
-}
-
-function atualizarPoolPreview() {
-  const pool = document.getElementById('admin-pool')?.value;
-  const prev = document.getElementById('admin-pool-preview');
-  if(!prev) return;
-  if(!pool) { prev.textContent = ''; return; }
-  const candidatos = allPlanos.filter(p => p.plano === pool && p.status === 'ativo');
-  if(!candidatos.length) {
-    prev.innerHTML = '<span style="color:var(--danger)">Nenhum cliente ativo neste pool.</span>';
-    return;
-  }
-  const sorteado = candidatos[Math.floor(Math.random()*candidatos.length)];
-  prev.innerHTML = `Cliente sorteado: <strong style="color:var(--accent)">${sorteado.cliente}</strong> — o lançamento será registrado para ele. <button class="btn btn-ghost" style="font-size:11px;padding:2px 8px;margin-left:8px" onclick="atualizarPoolPreview()">🔀 Ressortear</button>`;
-  prev.dataset.cliente = sorteado.cliente;
-}
-
-async function adicionarFichasAdmin() {
-  const barbeiro = document.getElementById('admin-barbeiro').value;
-  const qtd = parseInt(document.getElementById('admin-qtd').value)||0;
-  const pool = document.getElementById('admin-pool').value;
-  if(!barbeiro){ showToast('Selecione um barbeiro', true); return; }
-  if(qtd < 1){ showToast('Quantidade deve ser ao menos 1', true); return; }
-
-  // Add fichas
-  const {data:fichaRow} = await sb.from('fichas').select('fichas').eq('barbeiro', barbeiro).single();
-  const novasFichas = (fichaRow?.fichas||0) + qtd;
-  const {error} = await sb.from('fichas').upsert([{barbeiro, fichas:novasFichas}], {onConflict:'barbeiro'});
-  if(error){ showToast('Erro: '+error.message, true); return; }
-
-  // If pool selected, register lancamento for random client
-  if(pool) {
-    const prev = document.getElementById('admin-pool-preview');
-    const clienteNome = prev?.dataset?.cliente;
-    if(clienteNome) {
-      const now = new Date();
-      const hora = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-      const data = now.toISOString().split('T')[0];
-      await sb.from('lancamentos').insert([{
-        cliente: clienteNome, barbeiro, servico: pool,
-        pagamento: 'Admin', hora, data_atendimento: data
-      }]);
-      await loadLancamentos();
-    }
-  }
-
-  showToast(qtd+' ficha(s) adicionada(s) para '+barbeiro+(pool?' + lançamento registrado!':'!'));
-  document.getElementById('admin-qtd').value = '1';
-  document.getElementById('admin-motivo').value = '';
-  document.getElementById('admin-pool').value = '';
-  await renderAdminPanel();
-}
-
-async function removerFichaAdmin(barbeiro, atual) {
-  if(atual <= 0){ showToast('Barbeiro já tem 0 fichas', true); return; }
-  if(!confirm('Remover 1 ficha de '+barbeiro+'?')) return;
-  const {error} = await sb.from('fichas').upsert([{barbeiro, fichas: atual-1}], {onConflict:'barbeiro'});
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  showToast('1 ficha removida de '+barbeiro+'.');
-  await renderAdminPanel();
-}
-
-async function zerarFichasAdmin(barbeiro) {
-  if(!confirm('Zerar TODAS as fichas de '+barbeiro+'? Esta ação não pode ser desfeita.')) return;
-  const {error} = await sb.from('fichas').upsert([{barbeiro, fichas: 0}], {onConflict:'barbeiro'});
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  showToast('Fichas de '+barbeiro+' zeradas.');
-  await renderAdminPanel();
-}
-
-// ─── INIT ───────────────────────────────────────────────
+// ─── INIT ────────────────────────────────────────────────────
 async function init() {
   try {
-    await setupTables();
+    const {error} = await sb.from('clientes').select('id').limit(1);
+    if(error && error.code === '42P01') throw new Error('Tabelas não encontradas.');
     setStatus(true);
-    await Promise.all([loadClientes(), loadPlanos(), loadLancamentos(), loadCaixa()]);
+    await Promise.all([loadClientes(), loadPlanos(), loadLancamentos()]);
     renderDashboard();
     const now = new Date();
-    const h = String(now.getHours()).padStart(2,'0');
-    const m = String(now.getMinutes()).padStart(2,'0');
-    document.getElementById('lan-hora').value = h+':'+m;
+    document.getElementById('lan-hora').value = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
     document.getElementById('lan-data').value = now.toISOString().split('T')[0];
-    const cxDataEl = document.getElementById('cx-data'); if(cxDataEl) cxDataEl.value = now.toISOString().split('T')[0];
   } catch(e) {
     setStatus(false);
-    showToast('Erro ao conectar ao banco: '+e.message, true);
-  }
-}
-
-async function setupTables() {
-  // Try to create tables via RPC if they don't exist — fallback: just load data
-  // Tables needed: clientes, planos, lancamentos, fichas
-  // We'll attempt insert and catch to verify connectivity
-  const {error} = await sb.from('clientes').select('id').limit(1);
-  if(error && error.code === '42P01') {
-    throw new Error('Tabelas não encontradas. Crie as tabelas no Supabase (veja instruções abaixo).');
+    showToast('Erro ao conectar: '+e.message, true);
   }
 }
 
 function setStatus(online) {
-  document.getElementById('status-dot').className = 'status-dot' + (online?' online':'');
+  document.getElementById('status-dot').className = 'status-dot'+(online?' online':'');
   document.getElementById('status-txt').textContent = online ? 'Conectado ao Supabase' : 'Sem conexão';
 }
 
-// ─── LOAD DATA ───────────────────────────────────────────
+// ─── LOAD ────────────────────────────────────────────────────
 async function loadClientes() {
-  const {data, error} = await sb.from('clientes').select('*').order('created_at', {ascending:false});
+  const {data,error} = await sb.from('clientes').select('*').order('nome');
   if(error) throw error;
-  allClientes = data || [];
+  allClientes = data||[];
   populateClienteSelects();
 }
 
 async function loadPlanos() {
-  const {data, error} = await sb.from('planos').select('*').order('created_at', {ascending:false});
+  const {data,error} = await sb.from('planos').select('*').order('data_renovacao');
   if(error) throw error;
-  allPlanos = data || [];
-  // Auto-expire apenas planos que NÃO são débito automático
-  // Débito automático fica ativo até ser excluído manualmente
+  allPlanos = data||[];
+  // Auto-expire: apenas planos não-débito automático
   const today = new Date().toISOString().split('T')[0];
   const vencidos = allPlanos.filter(p =>
-    p.status === 'ativo' &&
-    p.data_renovacao && p.data_renovacao < today &&
-    p.pagamento !== 'Débito Automático'
+    p.status==='ativo' && p.data_renovacao && p.data_renovacao < today && p.pagamento !== 'Débito Automático'
   );
   if(vencidos.length) {
-    await Promise.all(vencidos.map(p => sb.from('planos').update({status:'vencido'}).eq('id', p.id)));
-    const {data:d2} = await sb.from('planos').select('*').order('created_at', {ascending:false});
-    allPlanos = d2 || [];
+    await Promise.all(vencidos.map(p => sb.from('planos').update({status:'vencido'}).eq('id',p.id)));
+    const {data:d2} = await sb.from('planos').select('*').order('data_renovacao');
+    allPlanos = d2||[];
   }
+  updateVencidosBadge();
 }
 
 async function loadLancamentos() {
-  const {data, error} = await sb.from('lancamentos').select('*').order('created_at', {ascending:false});
+  const {data,error} = await sb.from('lancamentos').select('*').order('data_atendimento',{ascending:false});
   if(error) throw error;
-  allLancamentos = data || [];
+  allLancamentos = data||[];
 }
 
 async function loadFichas() {
-  const {data, error} = await sb.from('fichas').select('*');
-  if(error) throw error;
-  return data || [];
+  const {data,error} = await sb.from('fichas').select('*');
+  if(error) return [];
+  return data||[];
 }
 
-async function loadCaixa() {
-  const {data, error} = await sb.from('caixa').select('*').order('data', {ascending:false});
-  if(error && error.code !== '42P01') console.warn('caixa:', error.message);
-  allCaixa = data || [];
+// ─── NOTIFICAÇÕES DE VENCIMENTO ──────────────────────────────
+function updateVencidosBadge() {
+  const today = new Date().toISOString().split('T')[0];
+  const em7dias = new Date(); em7dias.setDate(em7dias.getDate()+7);
+  const em7str = em7dias.toISOString().split('T')[0];
+  const vencidos = allPlanos.filter(p => p.status==='vencido').length;
+  const aVencer  = allPlanos.filter(p => p.status==='ativo' && p.data_renovacao && p.data_renovacao<=em7str && p.pagamento!=='Débito Automático').length;
+  const total = vencidos + aVencer;
+  const badge = document.getElementById('nav-vencidos-badge');
+  if(badge){ badge.textContent = total; badge.style.display = total>0?'inline':'none'; }
 }
 
-// ─── RENDER ──────────────────────────────────────────────
+function renderAlertas(containerId) {
+  const el = document.getElementById(containerId); if(!el) return;
+  const today = new Date().toISOString().split('T')[0];
+  const em7dias = new Date(); em7dias.setDate(em7dias.getDate()+7);
+  const em7str = em7dias.toISOString().split('T')[0];
+  const vencidos = allPlanos.filter(p => p.status==='vencido' && p.pagamento!=='Débito Automático');
+  const aVencer  = allPlanos.filter(p => p.status==='ativo' && p.data_renovacao && p.data_renovacao<=em7str && p.pagamento!=='Débito Automático');
+  if(!vencidos.length && !aVencer.length){ el.innerHTML=''; return; }
+  let items = '';
+  vencidos.forEach(p => {
+    items += `<div class="alert-item">⛔ <span>${p.cliente}</span> — plano vencido em ${fmtDate(p.data_renovacao)} <button class="btn btn-ghost" style="font-size:11px;padding:2px 8px;margin-left:8px;color:var(--accent);border-color:var(--accent)" onclick="renovarPlano('${p.id}','${p.plano}')">Renovar</button></div>`;
+  });
+  aVencer.forEach(p => {
+    items += `<div class="alert-item">⚠️ <span>${p.cliente}</span> — vence em ${fmtDate(p.data_renovacao)}</div>`;
+  });
+  el.innerHTML = `<div class="alert-banner"><div class="alert-banner-icon">🔔</div><div style="flex:1">${items}</div></div>`;
+}
+
+// ─── RENDER ──────────────────────────────────────────────────
 function renderDashboard() {
-  const totalPool = allPlanos.reduce((s,p) => s + (PLAN_PRICES[p.plano]||0), 0);
-  const fichasCount = allLancamentos.length;
+  const ativos = allPlanos.filter(p=>p.status==='ativo');
+  const venc   = allPlanos.filter(p=>p.status==='vencido').length;
+  const totalPool = ativos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
   document.getElementById('d-clientes').textContent = allClientes.length;
-  document.getElementById('d-planos').textContent = allPlanos.filter(p=>p.status==='ativo').length;
-  document.getElementById('d-pool').textContent = 'R$ ' + totalPool.toFixed(2).replace('.',',');
-  document.getElementById('d-fichas').textContent = fichasCount;
+  document.getElementById('d-planos').textContent   = ativos.length;
+  document.getElementById('d-pool').textContent     = 'R$ '+totalPool.toFixed(2).replace('.',',');
+  document.getElementById('d-vencidos').textContent = venc;
   renderPoolCards('pool-cards-dash');
-  const _now = new Date();
-  const _mes = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0');
-  const _cxMes = allCaixa.filter(c=>c.data&&c.data.startsWith(_mes));
-  const _ent = _cxMes.filter(c=>c.tipo==='entrada').reduce((s,c)=>s+Math.abs(c.valor||0),0);
-  const _sai = _cxMes.filter(c=>c.tipo==='saida').reduce((s,c)=>s+Math.abs(c.valor||0),0);
-  const _sal = _ent - _sai;
-  const _f = v=>'R$ '+v.toFixed(2).replace('.',',');
-  if(document.getElementById('d-cx-ent')) document.getElementById('d-cx-ent').textContent=_f(_ent);
-  if(document.getElementById('d-cx-sai')) document.getElementById('d-cx-sai').textContent=_f(_sai);
-  if(document.getElementById('d-cx-saldo')){document.getElementById('d-cx-saldo').textContent=_f(Math.abs(_sal));document.getElementById('d-cx-saldo').style.color=_sal>=0?'var(--success)':'var(--danger)';}
+  renderAlertas('dash-alertas');
   const tbody = document.getElementById('dash-lancamentos');
   if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="5" class="loading-row" style="color:var(--muted)">Nenhum atendimento registrado</td></tr>'; return; }
-  tbody.innerHTML = allLancamentos.slice(0,6).map(l=>`
-    <tr>
-      <td style="color:var(--muted)">${fmtDatetime(l.created_at)}</td>
-      <td>${l.cliente}</td>
-      <td>${planBadge(l.servico)}</td>
-      <td>${l.barbeiro}</td>
-      <td>${PLAN_DUR[l.servico]||'—'}</td>
-    </tr>`).join('');
+  tbody.innerHTML = allLancamentos.slice(0,6).map(l=>`<tr>
+    <td style="color:var(--muted)">${fmtDate(l.data_atendimento||l.created_at)} ${l.hora||''}</td>
+    <td>${l.cliente}</td><td>${planBadge(l.servico)}</td><td>${l.barbeiro}</td>
+    <td style="color:var(--muted)">${PLAN_DUR[l.servico]||'—'}</td>
+  </tr>`).join('');
 }
 
-function renderPoolCards(id) {
-  const c = document.getElementById(id); if(!c) return;
-  const pools = {cabelo:0, barba:0, cabelo_barba:0};
-  allPlanos.forEach(p => { if(pools[p.plano]!==undefined) pools[p.plano] += PLAN_PRICES[p.plano]; });
-  const total = Object.values(pools).reduce((a,b)=>a+b,0);
-  const cfg = [
-    {key:'cabelo', name:'Pool Cabelo', price:'79,90', color:'var(--pool-hair)', badge:'hair'},
-    {key:'barba', name:'Pool Barba', price:'89,90', color:'var(--pool-beard)', badge:'beard'},
-    {key:'cabelo_barba', name:'Pool Cabelo + Barba', price:'159,90', color:'var(--pool-both)', badge:'both'},
-  ];
-  c.innerHTML = cfg.map(p => {
-    const val = pools[p.key];
-    const comm = val * 0.5;
-    const pct = total > 0 ? Math.round((val/total)*100) : 0;
-    const count = allPlanos.filter(x=>x.plano===p.key&&x.status==='ativo').length;
-    return `<div class="pool-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
-        <div><div style="font-size:13px;font-weight:500;margin-bottom:2px">${p.name}</div>
-        <div style="font-size:12px;color:var(--muted)">R$ ${p.price}/mês</div></div>
-        <span class="pool-badge ${p.badge}">${count} ativo${count!==1?'s':''}</span>
+function renderPoolCards(containerId) {
+  const ativos = allPlanos.filter(p=>p.status==='ativo');
+  const hair = ativos.filter(p=>p.plano==='cabelo');
+  const beard= ativos.filter(p=>p.plano==='barba');
+  const both = ativos.filter(p=>p.plano==='cabelo_barba');
+  const pHair=hair.reduce((s,p)=>s+PLAN_PRICES.cabelo,0);
+  const pBeard=beard.reduce((s,p)=>s+PLAN_PRICES.barba,0);
+  const pBoth=both.reduce((s,p)=>s+PLAN_PRICES.cabelo_barba,0);
+  const total=pHair+pBeard+pBoth||1;
+  const el=document.getElementById(containerId); if(!el) return;
+  el.innerHTML=[
+    ['hair','Cabelo ✂️',hair.length,pHair,'var(--pool-hair)'],
+    ['beard','Barba 🪒',beard.length,pBeard,'var(--pool-beard)'],
+    ['both','Cabelo + Barba',both.length,pBoth,'var(--pool-both)']
+  ].map(([cls,name,count,val,color])=>`
+    <div class="pool-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span class="pool-badge ${cls}">${name}</span>
+        <span style="font-size:12px;color:var(--muted)">${count} clientes</span>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Total no pool</div>
-      <div style="font-size:22px;font-weight:500;color:var(--success);margin-bottom:8px">R$ ${val.toFixed(2).replace('.',',')}</div>
-      <div class="pool-bar"><div class="pool-bar-fill" style="width:${pct}%;background:${p.color}"></div></div>
-      <div class="pool-stats"><span>Comissão: <strong style="color:${p.color}">R$ ${comm.toFixed(2).replace('.',',')}</strong></span><span>${pct}% do total</span></div>
-    </div>`;}).join('');
+      <div style="font-size:22px;font-family:'Bebas Neue',cursive;color:${color}">R$ ${val.toFixed(2).replace('.',',')}</div>
+      <div class="pool-bar"><div class="pool-bar-fill" style="width:${Math.round(val/total*100)}%;background:${color}"></div></div>
+      <div class="pool-stats"><span>${Math.round(val/total*100)}% do pool</span><span>Pool: R$ ${(val*0.5).toFixed(2).replace('.',',')}</span></div>
+    </div>`).join('');
 }
 
 function renderLancamentos() {
   const tbody = document.getElementById('hist-lancamentos');
-  if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px">Nenhum atendimento ainda</td></tr>'; return; }
+  if(!allLancamentos.length){ tbody.innerHTML='<tr><td colspan="9" class="loading-row">Nenhum atendimento</td></tr>'; return; }
   tbody.innerHTML = allLancamentos.map(l=>{
     const bi = BARBERS.indexOf(l.barbeiro);
     const col = BARBER_COLORS[bi]||'#888';
-    const dataStr = l.data_atendimento ? fmtDate(l.data_atendimento) : fmtDatetime(l.created_at).split(' ')[0];
-    const horaStr = l.hora || fmtDatetime(l.created_at).split(' ')[1] || '—';
+    const dataStr = fmtDate(l.data_atendimento||l.created_at);
+    const horaStr = l.hora||'—';
     return `<tr>
       <td style="color:var(--muted)">${dataStr}</td>
       <td style="color:var(--muted)">${horaStr}</td>
@@ -875,14 +714,14 @@ function renderLancamentos() {
 
 function renderClientes(filter='') {
   const tbody = document.getElementById('clientes-table');
-  const list = filter ? allClientes.filter(c=>c.nome.toLowerCase().includes(filter.toLowerCase())||c.telefone.includes(filter)) : allClientes;
+  const list = filter ? allClientes.filter(c=>c.nome.toLowerCase().includes(filter.toLowerCase())||(c.telefone&&c.telefone.includes(filter))) : allClientes;
   if(!list.length){ tbody.innerHTML='<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px">Nenhum cliente encontrado</td></tr>'; return; }
   tbody.innerHTML = list.map(c=>{
     const plano = allPlanos.find(p=>p.cliente_id===c.id&&p.status==='ativo');
     const atend = allLancamentos.filter(l=>l.cliente===c.nome).length;
     return `<tr>
       <td style="font-weight:500">${c.nome}</td>
-      <td style="color:var(--muted)">${c.telefone}</td>
+      <td style="color:var(--muted)">${c.telefone||'—'}</td>
       <td>${plano?planBadge(plano.plano):'<span style="color:var(--muted);font-size:12px">sem plano</span>'}</td>
       <td style="color:var(--muted)">${fmtDate(c.created_at)}</td>
       <td>${atend}</td>
@@ -892,80 +731,62 @@ function renderClientes(filter='') {
     </tr>`;}).join('');
 }
 
-function statusPlano(p) {
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  if(p.status==='cancelado') return {label:'cancelado',color:'var(--danger)',bg:'rgba(224,85,85,0.05)',left:'var(--danger)',badge:'badge-danger'};
-  if(p.status==='vencido')   return {label:'vencido',color:'#e08c3a',bg:'rgba(224,140,58,0.05)',left:'#e08c3a',badge:'badge-warning'};
-  if(p.pagamento==='Débito Automático') return {label:'↻ automático',color:'var(--success)',bg:'rgba(76,175,125,0.04)',left:'var(--info)',badge:'badge-success'};
-  if(p.data_renovacao){
-    const venc=new Date(p.data_renovacao+'T12:00');
-    const diff=Math.ceil((venc-hoje)/(864e5));
-    if(diff<=0) return {label:'vencido',color:'#e08c3a',bg:'rgba(224,140,58,0.05)',left:'#e08c3a',badge:'badge-warning'};
-    if(diff<=5) return {label:'vence em '+diff+'d',color:'var(--accent)',bg:'rgba(201,168,76,0.05)',left:'var(--accent)',badge:'badge-warning'};
-  }
-  return {label:'ativo',color:'var(--success)',bg:'rgba(76,175,125,0.04)',left:'var(--success)',badge:'badge-success'};
-}
-
 function renderPlanos() {
   renderPoolCards('pool-cards-planos');
+  renderAlertas('planos-alertas');
   const tbody = document.getElementById('planos-table');
-  if(!allPlanos.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Nenhum plano cadastrado</td></tr>'; return; }
-  tbody.innerHTML = allPlanos.map(p=>{
-    const st = statusPlano(p);
-    const isDebAuto = p.pagamento==='Débito Automático';
-    const isCancelado = p.status==='cancelado';
-    const pagLabel = isDebAuto ? '<span style="color:var(--success);font-size:12px">↻ Déb. Auto</span>' : (p.pagamento||'—');
-    const pid=p.id; const pcli=p.cliente.replace(/'/g,"\\'");
-    let acoes;
-    if(isCancelado){
-      acoes=`<div style="display:flex;gap:6px">
-        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="reativarPlano('${pid}','${pcli}')">Reativar</button>
-        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirPlano('${pid}','${pcli}')">🗑</button>
-      </div>`;
-    } else if(isDebAuto){
-      acoes=`<div style="display:flex;gap:6px">
-        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--accent);border-color:rgba(201,168,76,0.3)" onclick="cancelarPlano('${pid}','${pcli}')">Cancelar</button>
-        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirPlano('${pid}','${pcli}')">🗑</button>
-      </div>`;
-    } else {
-      acoes=`<div style="display:flex;gap:6px">
-        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="renovarPlano('${pid}','${p.plano}')">Renovar</button>
-        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--accent);border-color:rgba(201,168,76,0.3)" onclick="cancelarPlano('${pid}','${pcli}')">Cancelar</button>
-        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirPlano('${pid}','${pcli}')">🗑</button>
-      </div>`;
-    }
-    return `<tr style="background:${st.bg}">
-      <td style="font-weight:500;border-left:3px solid ${st.left};padding-left:15px">${p.cliente}</td>
+  if(!allPlanos.length){ tbody.innerHTML='<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px">Nenhum plano</td></tr>'; return; }
+  // Sort: vencidos first, then by data_renovacao
+  const sorted = [...allPlanos].sort((a,b)=>{
+    if(a.status==='vencido'&&b.status!=='vencido') return -1;
+    if(b.status==='vencido'&&a.status!=='vencido') return 1;
+    return (a.data_renovacao||'').localeCompare(b.data_renovacao||'');
+  });
+  const today = new Date().toISOString().split('T')[0];
+  const em7d = new Date(); em7d.setDate(em7d.getDate()+7);
+  const em7str = em7d.toISOString().split('T')[0];
+  tbody.innerHTML = sorted.map(p=>{
+    const vencido = p.status==='vencido';
+    const aVencer = p.status==='ativo' && p.data_renovacao && p.data_renovacao<=em7str && p.pagamento!=='Débito Automático';
+    const statusBadge = vencido
+      ? '<span class="badge badge-danger">vencido</span>'
+      : p.status==='ativo'
+        ? '<span class="badge badge-success">ativo</span>'
+        : `<span class="badge badge-warning">${p.status}</span>`;
+    const rowStyle = vencido?'background:rgba(224,85,85,0.04)':aVencer?'background:rgba(224,160,48,0.04)':'';
+    const renovLabel = vencido?'⚠️ Renovar':aVencer?'🔔 Renovar':'Renovar';
+    const renovStyle = vencido?';color:var(--danger);border-color:rgba(224,85,85,0.4)':aVencer?';color:var(--warning);border-color:rgba(224,160,48,0.4)':'';
+    return `<tr style="${rowStyle}">
+      <td style="font-weight:500">${p.cliente}</td>
       <td>${planBadge(p.plano)}</td>
-      <td>${pagLabel}</td>
+      <td>${PAY_ICON[p.pagamento]||''} ${p.pagamento||'—'}</td>
       <td style="color:var(--muted)">${fmtDate(p.data_ativacao)}</td>
-      <td style="color:${st.color};font-weight:500">${fmtDate(p.data_renovacao)}</td>
-      <td><span class="badge ${st.badge}" style="font-size:10px">${st.label}</span></td>
-      <td>${acoes}</td>
-    </tr>`;
-  }).join('');
+      <td style="${vencido?'color:var(--danger)':aVencer?'color:var(--warning)':''}">${fmtDate(p.data_renovacao)}</td>
+      <td>${statusBadge}</td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px${renovStyle}" onclick="renovarPlano('${p.id}','${p.plano}')">${renovLabel}</button></td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirPlano('${p.id}','${p.cliente}')">🗑</button></td>
+    </tr>`;}).join('');
 }
 
 async function renderBarbeiros() {
   const fichasRows = await loadFichas();
   const fichasMap = {};
-  BARBERS.forEach(b => fichasMap[b] = 0);
-  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
+  BARBERS.forEach(b=>fichasMap[b]=0);
+  fichasRows.forEach(f=>{ if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro]=f.fichas; });
   const totalFichas = Object.values(fichasMap).reduce((a,b)=>a+b,0);
-  const totalPool = allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0)*0.5;
-  const c = document.getElementById('barber-cards');
-  c.innerHTML = BARBERS.map((b,i)=>{
+  const totalPool = allPlanos.filter(p=>p.status==='ativo').reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0)*0.5;
+  document.getElementById('barber-cards').innerHTML = BARBERS.map((b,i)=>{
     const fichas = fichasMap[b]||0;
-    const pct = totalFichas>0 ? fichas/totalFichas : 0;
+    const pct = totalFichas>0?fichas/totalFichas:0;
     const comm = (totalPool*pct).toFixed(2).replace('.',',');
     const atend = allLancamentos.filter(l=>l.barbeiro===b).length;
-    const chips = Array.from({length:fichas},()=>`<span class="chip chip-gold">✦</span>`).join('');
-    const empty = '';
+    const chips = Array.from({length:Math.min(fichas,16)},()=>`<span class="chip chip-gold">✦</span>`).join('');
+    const extra = fichas>16?`<span style="font-size:11px;color:var(--muted)"> +${fichas-16}</span>`:'';
     return `<div class="barber-card">
       <div class="barber-avatar" style="background:${BARBER_COLORS[i]}22;color:${BARBER_COLORS[i]}">${b.substring(0,2).toUpperCase()}</div>
       <div class="barber-name">${b}</div>
       <div class="barber-sub">${fichas} ficha${fichas!==1?'s':''}</div>
-      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin-bottom:10px">${chips}${empty}</div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin-bottom:10px">${chips}${extra}</div>
       <div class="barber-stats">
         <div style="text-align:center"><div class="barber-stat-val" style="color:${BARBER_COLORS[i]}">${atend}</div><div class="barber-stat-lbl">atend.</div></div>
         <div style="text-align:center"><div class="barber-stat-val" style="color:${BARBER_COLORS[i]}">R$ ${comm}</div><div class="barber-stat-lbl">comissão</div></div>
@@ -977,296 +798,355 @@ async function renderBarbeiros() {
 function populateMesFiltro() {
   const sel = document.getElementById('fichas-mes-filtro'); if(!sel) return;
   const meses = new Set();
-  allLancamentos.forEach(l => {
-    const d = l.data_atendimento || (l.created_at ? l.created_at.split('T')[0] : null);
-    if(d) meses.add(d.substring(0,7));
-  });
+  allLancamentos.forEach(l=>{ const d=l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:null); if(d) meses.add(d.substring(0,7)); });
+  const now = new Date();
+  const mesAtual = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  meses.add(mesAtual);
   const sorted = Array.from(meses).sort().reverse();
-  const cur = sel.value;
+  const cur = sel.value || mesAtual;
   sel.innerHTML = '<option value="">Todo o período</option>';
-  sorted.forEach(m => {
-    const [y,mo] = m.split('-');
-    const label = new Date(Number(y),Number(mo)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-    const opt = document.createElement('option');
-    opt.value = m; opt.textContent = label.charAt(0).toUpperCase()+label.slice(1);
-    sel.appendChild(opt);
-  });
-  if(cur) sel.value = cur;
+  sorted.forEach(m=>{ const [y,mo]=m.split('-'); const label=new Date(Number(y),Number(mo)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); const opt=document.createElement('option'); opt.value=m; opt.textContent=label.charAt(0).toUpperCase()+label.slice(1); sel.appendChild(opt); });
+  sel.value = cur;
 }
 
 async function renderFichas() {
   populateMesFiltro();
-  const mesFiltro = document.getElementById('fichas-mes-filtro')?.value || '';
-
-  // FONTE DE VERDADE: tabela fichas para totais reais
+  const mesFiltro = document.getElementById('fichas-mes-filtro')?.value||'';
   const fichasRows = await loadFichas();
   const fichasMap = {};
-  BARBERS.forEach(b => fichasMap[b] = 0);
-  fichasRows.forEach(f => { if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro] = f.fichas; });
-
-  // Para visualização mensal, conta lancamentos do período
+  BARBERS.forEach(b=>fichasMap[b]=0);
+  fichasRows.forEach(f=>{ if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro]=f.fichas; });
   let displayMap = fichasMap;
   if(mesFiltro) {
-    const lanMap = {};
-    BARBERS.forEach(b => lanMap[b] = 0);
-    allLancamentos.filter(l => {
-      const d = l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:'');
-      return d.startsWith(mesFiltro);
-    }).forEach(l => { if(lanMap[l.barbeiro]!==undefined) lanMap[l.barbeiro]++; });
+    const lanMap = {}; BARBERS.forEach(b=>lanMap[b]=0);
+    allLancamentos.filter(l=>{ const d=l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:''); return d.startsWith(mesFiltro); }).forEach(l=>{ if(lanMap[l.barbeiro]!==undefined) lanMap[l.barbeiro]++; });
     displayMap = lanMap;
   }
-
   const totalDisplay = Object.values(displayMap).reduce((a,b)=>a+b,0);
-  const totalPool = allPlanos.reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
-  const commPool = totalPool * 0.5;
+  const totalPool = allPlanos.filter(p=>p.status==='ativo').reduce((s,p)=>s+(PLAN_PRICES[p.plano]||0),0);
+  const commPool = totalPool*0.5;
   let periodoLabel = 'Todo o período';
-  if(mesFiltro) {
-    const [y,mo] = mesFiltro.split('-');
-    periodoLabel = new Date(Number(y),Number(mo)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-    periodoLabel = periodoLabel.charAt(0).toUpperCase()+periodoLabel.slice(1);
-  }
-  const badge = document.getElementById('fichas-periodo-badge');
-  if(badge) badge.textContent = mesFiltro ? '— '+periodoLabel : '';
-  const summary = document.getElementById('fichas-summary');
-  if(summary) summary.innerHTML = `
+  if(mesFiltro){ const [y,mo]=mesFiltro.split('-'); periodoLabel=new Date(Number(y),Number(mo)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); periodoLabel=periodoLabel.charAt(0).toUpperCase()+periodoLabel.slice(1); }
+  document.getElementById('fichas-periodo-badge').textContent = mesFiltro?'— '+periodoLabel:'';
+  document.getElementById('fichas-summary').innerHTML = `
     <div class="card"><div class="card-title">${mesFiltro?'Atend. no mês':'Fichas (tabela)'}</div><div class="card-value">${totalDisplay}</div></div>
     <div class="card"><div class="card-title">Pool comissão (50%)</div><div class="card-value" style="color:var(--success)">R$ ${commPool.toFixed(2).replace('.',',')}</div></div>
     <div class="card"><div class="card-title">Período</div><div class="card-value" style="font-size:15px;letter-spacing:0">${periodoLabel}</div></div>`;
-  const tbody = document.getElementById('fichas-table');
-  if(!tbody) return;
-  tbody.innerHTML = BARBERS.map((b,i)=>{
-    const fichas = displayMap[b]||0;
-    const pct = totalDisplay>0 ? Math.round((fichas/totalDisplay)*100) : 0;
-    const comm = (commPool*(totalDisplay>0?fichas/totalDisplay:0)).toFixed(2).replace('.',',');
-    const show = Math.min(fichas,20);
-    const chips = Array.from({length:show},()=>`<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${BARBER_COLORS[i]};color:#111;text-align:center;line-height:20px;font-size:10px;margin:1px">✦</span>`).join('');
-    const extra = fichas>20?`<span style="font-size:11px;color:var(--muted)"> +${fichas-20}</span>`:'';
+  document.getElementById('fichas-table').innerHTML = BARBERS.map((b,i)=>{
+    const fichas=displayMap[b]||0;
+    const pct=totalDisplay>0?Math.round((fichas/totalDisplay)*100):0;
+    const comm=(commPool*(totalDisplay>0?fichas/totalDisplay:0)).toFixed(2).replace('.',',');
+    const show=Math.min(fichas,20);
+    const chips=Array.from({length:show},()=>`<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${BARBER_COLORS[i]};color:#111;text-align:center;line-height:20px;font-size:10px;margin:1px">✦</span>`).join('');
+    const extra=fichas>20?`<span style="font-size:11px;color:var(--muted)"> +${fichas-20}</span>`:'';
+    return `<tr><td style="font-weight:500">${b}</td><td>${fichas}</td><td>${pct}%</td><td style="color:var(--success)">R$ ${comm}</td><td style="line-height:1.4">${chips||'<span style="color:var(--muted);font-size:12px">—</span>'}${extra}</td></tr>`;
+  }).join('');
+}
+
+// ─── CAIXA ────────────────────────────────────────────────────
+function populateCaixaMes() {
+  const sel = document.getElementById('caixa-mes'); if(!sel) return;
+  const meses = new Set();
+  allLancamentos.forEach(l=>{ const d=l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:null); if(d) meses.add(d.substring(0,7)); });
+  allPlanos.forEach(p=>{ if(p.data_ativacao) meses.add(p.data_ativacao.substring(0,7)); });
+  const now = new Date();
+  const mesAtual = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  meses.add(mesAtual);
+  const sorted = Array.from(meses).sort().reverse();
+  const cur = sel.value || mesAtual;
+  sel.innerHTML = '<option value="">Todo o período</option>';
+  sorted.forEach(m=>{ const [y,mo]=m.split('-'); const label=new Date(Number(y),Number(mo)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); const opt=document.createElement('option'); opt.value=m; opt.textContent=label.charAt(0).toUpperCase()+label.slice(1); sel.appendChild(opt); });
+  sel.value = cur;
+}
+
+function renderCaixa() {
+  populateCaixaMes();
+  const mes = document.getElementById('caixa-mes')?.value||'';
+  const fonte = document.getElementById('caixa-fonte')?.value||'ambos';
+  const entries = [];
+  if(fonte==='planos'||fonte==='ambos') {
+    allPlanos.forEach(p=>{ const d=p.data_ativacao||''; if(mes&&!d.startsWith(mes)) return; entries.push({data:d,tipo:'Plano',cliente:p.cliente,descricao:(PLAN_NAMES[p.plano]||p.plano),pagamento:p.pagamento||'—',valor:PLAN_PRICES[p.plano]||0}); });
+  }
+  if(fonte==='lancamentos'||fonte==='ambos') {
+    allLancamentos.forEach(l=>{ const d=l.data_atendimento||(l.created_at?l.created_at.split('T')[0]:''); if(mes&&!d.startsWith(mes)) return; if(!l.pagamento||l.pagamento==='Admin') return; entries.push({data:d,tipo:'Atendimento',cliente:l.cliente,descricao:(PLAN_NAMES[l.servico]||l.servico||'—')+' c/ '+(l.barbeiro||'—'),pagamento:l.pagamento||'—',valor:0}); });
+  }
+  entries.sort((a,b)=>b.data.localeCompare(a.data));
+  const totalGeral = entries.reduce((s,e)=>s+e.valor,0);
+  const pool = totalGeral*0.5;
+  const qtdPlanos = entries.filter(e=>e.tipo==='Plano').length;
+  document.getElementById('caixa-totais').innerHTML = `
+    <div class="card"><div class="card-title">Receita total</div><div class="card-value" style="color:var(--success)">R$ ${totalGeral.toFixed(2).replace('.',',')}</div></div>
+    <div class="card"><div class="card-title">Pool comissão (50%)</div><div class="card-value" style="color:var(--accent)">R$ ${pool.toFixed(2).replace('.',',')}</div></div>
+    <div class="card"><div class="card-title">Planos no período</div><div class="card-value">${qtdPlanos}</div></div>
+    <div class="card"><div class="card-title">Atendimentos</div><div class="card-value">${entries.filter(e=>e.tipo==='Atendimento').length}</div></div>`;
+  // By payment
+  const formasMap = {};
+  entries.forEach(e=>{ if(!formasMap[e.pagamento]) formasMap[e.pagamento]={qtd:0,total:0}; formasMap[e.pagamento].qtd++; formasMap[e.pagamento].total+=e.valor; });
+  const formasSorted = Object.entries(formasMap).sort((a,b)=>b[1].total-a[1].total);
+  document.getElementById('caixa-formas').innerHTML = formasSorted.length
+    ? formasSorted.map(([f,v])=>{ const pct=totalGeral>0?Math.round((v.total/totalGeral)*100):0; return `<tr><td>${PAY_ICON[f]||''} ${f}</td><td>${v.qtd}</td><td style="color:var(--success)">R$ ${v.total.toFixed(2).replace('.',',')}</td><td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:${pct}%;height:100%;background:var(--accent);border-radius:2px"></div></div><span style="font-size:11px;color:var(--muted)">${pct}%</span></div></td></tr>`; }).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">Sem entradas</td></tr>';
+  // By plan
+  const planosMap = {};
+  entries.filter(e=>e.tipo==='Plano').forEach(e=>{ if(!planosMap[e.descricao]) planosMap[e.descricao]={qtd:0,total:0}; planosMap[e.descricao].qtd++; planosMap[e.descricao].total+=e.valor; });
+  document.getElementById('caixa-planos-table').innerHTML = Object.entries(planosMap).length
+    ? Object.entries(planosMap).sort((a,b)=>b[1].total-a[1].total).map(([n,v])=>`<tr><td>${n}</td><td>${v.qtd}</td><td style="color:var(--success)">R$ ${v.total.toFixed(2).replace('.',',')}</td></tr>`).join('')
+    : '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px">Sem planos</td></tr>';
+  document.getElementById('caixa-count').textContent = entries.length+' registro(s)';
+  document.getElementById('caixa-detail').innerHTML = entries.length
+    ? entries.map(e=>`<tr><td style="color:var(--muted)">${fmtDate(e.data)}</td><td><span class="badge ${e.tipo==='Plano'?'badge-success':'badge-info'}" style="font-size:10px">${e.tipo}</span></td><td>${e.cliente}</td><td style="color:var(--muted);font-size:12px">${e.descricao}</td><td>${PAY_ICON[e.pagamento]||''} ${e.pagamento}</td><td style="color:var(--success);font-weight:500">${e.valor>0?'R$ '+e.valor.toFixed(2).replace('.',','):'—'}</td></tr>`).join('')
+    : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Nenhuma entrada no período</td></tr>';
+}
+
+// ─── ADMIN ────────────────────────────────────────────────────
+const ADMIN_SENHA = '@Radd0000';
+let adminDesbloqueado = false;
+
+function verificarSenhaAdmin() {
+  const v = document.getElementById('admin-senha-input').value;
+  if(v===ADMIN_SENHA) {
+    adminDesbloqueado=true;
+    document.getElementById('admin-lock').style.display='none';
+    document.getElementById('admin-panel').style.display='block';
+    document.getElementById('admin-senha-input').value='';
+    document.getElementById('admin-senha-erro').style.display='none';
+    renderAdminPanel();
+  } else {
+    document.getElementById('admin-senha-erro').style.display='block';
+    document.getElementById('admin-senha-input').value='';
+  }
+}
+
+function bloquearAdmin() {
+  adminDesbloqueado=false;
+  document.getElementById('admin-lock').style.display='flex';
+  document.getElementById('admin-panel').style.display='none';
+}
+
+async function renderAdminPanel() {
+  const bSel=document.getElementById('admin-barbeiro'); const curB=bSel.value;
+  bSel.innerHTML='<option value="">Selecionar...</option>';
+  BARBERS.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; bSel.appendChild(o); });
+  if(curB) bSel.value=curB;
+  const cSel=document.getElementById('admin-cliente'); const curC=cSel.value;
+  cSel.innerHTML='<option value="">Selecionar cliente...</option>';
+  allClientes.forEach(c=>{ const o=document.createElement('option'); o.value=c.nome; o.textContent=c.nome; cSel.appendChild(o); });
+  if(curC) cSel.value=curC;
+  const fichasRows=await loadFichas();
+  const fichasMap={}; BARBERS.forEach(b=>fichasMap[b]=0);
+  fichasRows.forEach(f=>{ if(fichasMap[f.barbeiro]!==undefined) fichasMap[f.barbeiro]=f.fichas; });
+  document.getElementById('admin-fichas-cards').innerHTML = BARBERS.map((b,i)=>`
+    <div class="card" style="border-left:3px solid ${BARBER_COLORS[i]}">
+      <div class="card-title">${b}</div>
+      <div class="card-value">${fichasMap[b]||0} <span style="font-size:14px;color:var(--muted)">fichas</span></div>
+    </div>`).join('');
+  document.getElementById('admin-excluir-table').innerHTML = BARBERS.map((b,i)=>{
+    const f=fichasMap[b]||0;
     return `<tr>
-      <td style="font-weight:500">${b}</td><td>${fichas}</td><td>${pct}%</td>
-      <td style="color:var(--success)">R$ ${comm}</td>
-      <td style="line-height:1.4">${chips||'<span style="color:var(--muted);font-size:12px">—</span>'}${extra}</td>
+      <td style="font-weight:500;color:${BARBER_COLORS[i]}">${b}</td><td>${f}</td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--danger);border-color:rgba(224,85,85,0.3)" ${f===0?'disabled':''} onclick="removerFichaAdmin('${b}',${f})">−1 ficha</button></td>
+      <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--danger);border-color:rgba(224,85,85,0.3)" ${f===0?'disabled':''} onclick="zerarFichasAdmin('${b}')">Zerar</button></td>
     </tr>`;}).join('');
 }
 
-// ─── ACTIONS ─────────────────────────────────────────────
-async function registrarLancamento() {
-  const cliente = document.getElementById('lan-cliente').value;
-  const barbeiro = document.getElementById('lan-barbeiro').value;
-  const servico = document.getElementById('lan-servico').value;
-  const pagamento = document.getElementById('lan-pagamento').value;
-  const hora = document.getElementById('lan-hora').value;
-  const data = document.getElementById('lan-data').value;
-  if(!cliente||!barbeiro||!servico||!pagamento||!hora||!data){ showToast('Preencha todos os campos', true); return; }
-  const {error} = await sb.from('lancamentos').insert([{cliente, barbeiro, servico, pagamento, hora, data_atendimento: data}]);
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  // Upsert ficha
-  const {data:fichaRow} = await sb.from('fichas').select('fichas').eq('barbeiro', barbeiro).single();
-  const novasFichas = (fichaRow?.fichas||0) + 1;
-  await sb.from('fichas').upsert([{barbeiro, fichas:novasFichas}], {onConflict:'barbeiro'});
-  showToast('Ficha atribuída a '+barbeiro+'! ✦');
+function randomDateTimeThisMonth() {
+  const now=new Date(); const dia=Math.floor(Math.random()*now.getDate())+1;
+  const hora=Math.floor(Math.random()*12)+8; const min=Math.floor(Math.random()*60);
+  const dt=new Date(now.getFullYear(),now.getMonth(),dia,hora,min);
+  return { dataStr:dt.toISOString().split('T')[0], horaStr:String(hora).padStart(2,'0')+':'+String(min).padStart(2,'0') };
+}
+
+async function adicionarFichasAdmin() {
+  const barbeiro=document.getElementById('admin-barbeiro').value;
+  const cliente=document.getElementById('admin-cliente').value;
+  const servico=document.getElementById('admin-servico').value;
+  const qtd=parseInt(document.getElementById('admin-qtd').value)||0;
+  if(!barbeiro){ showToast('Selecione um barbeiro',true); return; }
+  if(!cliente){  showToast('Selecione um cliente',true); return; }
+  if(!servico){  showToast('Selecione o serviço',true); return; }
+  if(qtd<1){     showToast('Quantidade mínima: 1',true); return; }
+  const {data:fichaRow} = await sb.from('fichas').select('fichas').eq('barbeiro',barbeiro).single();
+  const novasFichas=(fichaRow?.fichas||0)+qtd;
+  const {error} = await sb.from('fichas').upsert([{barbeiro,fichas:novasFichas}],{onConflict:'barbeiro'});
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  const lans=[]; for(let i=0;i<qtd;i++){ const {dataStr,horaStr}=randomDateTimeThisMonth(); lans.push({cliente,barbeiro,servico,pagamento:'Admin',hora:horaStr,data_atendimento:dataStr}); }
+  await sb.from('lancamentos').insert(lans);
   await loadLancamentos();
-  renderLancamentos();
-  renderDashboard();
-  ['lan-cliente','lan-barbeiro','lan-servico','lan-pagamento'].forEach(i => document.getElementById(i).value='');
+  showToast(qtd+' ficha(s) + lançamento(s) adicionados para '+barbeiro+' / '+cliente+'!');
+  document.getElementById('admin-qtd').value='1';
+  await renderAdminPanel();
+}
+
+async function removerFichaAdmin(barbeiro,atual) {
+  if(!confirm('Remover 1 ficha de '+barbeiro+'?')) return;
+  await sb.from('fichas').upsert([{barbeiro,fichas:Math.max(0,atual-1)}],{onConflict:'barbeiro'});
+  showToast('1 ficha removida de '+barbeiro+'.'); await renderAdminPanel();
+}
+
+async function zerarFichasAdmin(barbeiro) {
+  if(!confirm('Zerar TODAS as fichas de '+barbeiro+'?')) return;
+  await sb.from('fichas').upsert([{barbeiro,fichas:0}],{onConflict:'barbeiro'});
+  showToast('Fichas de '+barbeiro+' zeradas.'); await renderAdminPanel();
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────
+async function registrarLancamento() {
+  const cliente=document.getElementById('lan-cliente').value;
+  const barbeiro=document.getElementById('lan-barbeiro').value;
+  const servico=document.getElementById('lan-servico').value;
+  const pagamento=document.getElementById('lan-pagamento').value;
+  const hora=document.getElementById('lan-hora').value;
+  const data=document.getElementById('lan-data').value;
+  if(!cliente||!barbeiro||!servico||!pagamento||!hora||!data){ showToast('Preencha todos os campos',true); return; }
+  const {error}=await sb.from('lancamentos').insert([{cliente,barbeiro,servico,pagamento,hora,data_atendimento:data}]);
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  const {data:fichaRow}=await sb.from('fichas').select('fichas').eq('barbeiro',barbeiro).single();
+  await sb.from('fichas').upsert([{barbeiro,fichas:(fichaRow?.fichas||0)+1}],{onConflict:'barbeiro'});
+  showToast('Ficha atribuída a '+barbeiro+'! ✦');
+  await loadLancamentos(); renderLancamentos(); renderDashboard();
+  ['lan-cliente','lan-barbeiro','lan-servico','lan-pagamento'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('lan-duracao').value='—';
-  const now = new Date();
-  document.getElementById('lan-hora').value = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-  document.getElementById('lan-data').value = now.toISOString().split('T')[0];
+  const now=new Date();
+  document.getElementById('lan-hora').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('lan-data').value=now.toISOString().split('T')[0];
 }
 
 async function salvarCliente() {
-  const nome = document.getElementById('nc-nome').value.trim();
-  const telefone = document.getElementById('nc-tel').value.trim();
-  if(!nome||!telefone){ showToast('Nome e telefone obrigatórios', true); return; }
-  const nomeNorm = nome.toLowerCase();
-  const telNorm = telefone.replace(/\D/g,'');
-  const dupNome = allClientes.find(c => c.nome.toLowerCase() === nomeNorm);
-  const dupTel  = allClientes.find(c => c.telefone.replace(/\D/g,'') === telNorm && telNorm.length >= 8);
-  if(dupNome && dupTel){ showToast('Já existe um cliente com esse nome e telefone: '+dupNome.nome, true); return; }
-  if(dupNome){ showToast('Já existe um cliente com o nome "'+dupNome.nome+'" cadastrado.', true); return; }
-  if(dupTel){ showToast('O telefone '+telefone+' já está cadastrado para '+dupTel.nome+'.', true); return; }
-  const btn = document.getElementById('btn-salvar-cliente');
-  btn.textContent = 'Salvando...'; btn.disabled = true;
-  const {error} = await sb.from('clientes').insert([{nome, telefone, email:document.getElementById('nc-email').value, nascimento:document.getElementById('nc-nasc').value||null}]);
-  btn.textContent = 'Salvar cliente'; btn.disabled = false;
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  closeModal('modal-cliente');
-  showToast('Cliente cadastrado!');
-  await loadClientes();
-  renderClientes(document.getElementById('search-cliente')?.value||'');
-  renderDashboard();
-}
-
-async function confirmarPlano() {
-  const cliente_nome = document.getElementById('ap-cliente').value;
-  const plano = document.getElementById('ap-plano').value;
-  const pagamento = selectedPayment;
-  const data_ativacao = document.getElementById('ap-data').value;
-  if(!cliente_nome||!plano||!pagamento||!data_ativacao){ showToast('Preencha todos os campos', true); return; }
-  const dt = new Date(data_ativacao+'T12:00');
-  const renovacao = new Date(dt); renovacao.setDate(renovacao.getDate()+30);
-  const cliente_obj = allClientes.find(c=>c.nome===cliente_nome);
-  const btn = document.getElementById('btn-confirmar-plano');
-  btn.textContent = 'Salvando...'; btn.disabled = true;
-  const {error} = await sb.from('planos').insert([{
-    cliente: cliente_nome,
-    cliente_id: cliente_obj?.id||null,
-    plano, pagamento, status:'ativo',
-    data_ativacao: dt.toISOString().split('T')[0],
-    data_renovacao: renovacao.toISOString().split('T')[0]
-  }]);
-  btn.textContent = 'Confirmar ativação'; btn.disabled = false;
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  closeModal('modal-ativar');
-  showToast('Plano ativado! Pool atualizado.');
-  await loadPlanos();
-  renderPlanos(); renderDashboard();
-}
-
-function renovarPlano(id, plano) {
-  document.getElementById('ren-plano-id').value = id;
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('ren-data').value = today;
-  document.getElementById('ren-nova-data').value = '';
-  calcRenovacaoModal();
-  openModal('modal-renovar');
-}
-
-function calcRenovacaoModal() {
-  const d = document.getElementById('ren-data').value; if(!d) return;
-  const dt = new Date(d+'T12:00'); const ren = new Date(dt); ren.setDate(ren.getDate()+30);
-  document.getElementById('ren-nova-data').value = ren.toLocaleDateString('pt-BR');
-}
-
-async function confirmarRenovacao() {
-  const id = document.getElementById('ren-plano-id').value;
-  const data = document.getElementById('ren-data').value;
-  if(!data){ showToast('Selecione a data de renovação', true); return; }
-  const dt = new Date(data+'T12:00');
-  const nova = new Date(dt); nova.setDate(nova.getDate()+30);
-  const btn = document.getElementById('btn-confirmar-renovar');
-  btn.textContent = 'Salvando...'; btn.disabled = true;
-  const {error} = await sb.from('planos').update({
-    data_ativacao: dt.toISOString().split('T')[0],
-    data_renovacao: nova.toISOString().split('T')[0],
-    status: 'ativo'
-  }).eq('id', id);
-  btn.textContent = 'Confirmar renovação'; btn.disabled = false;
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  closeModal('modal-renovar');
-  showToast('Plano renovado! Vencimento: '+nova.toLocaleDateString('pt-BR'));
-  await loadPlanos();
-  renderPlanos(); renderDashboard();
-}
-
-async function excluirLancamento(id, barbeiro) {
-  if(!confirm('Excluir este atendimento? A ficha de '+barbeiro+' será descontada.')) return;
-  const {error} = await sb.from('lancamentos').delete().eq('id', id);
-  if(error){ showToast('Erro ao excluir: '+error.message, true); return; }
-  // Descontar ficha do barbeiro
-  const {data:fichaRow} = await sb.from('fichas').select('fichas').eq('barbeiro', barbeiro).single();
-  const novasFichas = Math.max(0, (fichaRow?.fichas||0) - 1);
-  await sb.from('fichas').upsert([{barbeiro, fichas:novasFichas}], {onConflict:'barbeiro'});
-  showToast('Atendimento excluído. Ficha de '+barbeiro+' atualizada.');
-  await loadLancamentos();
-  renderLancamentos();
-  renderDashboard();
-}
-
-async function excluirCliente(id, nome) {
-  if(!confirm('Excluir o cliente '+nome+'? Isso também removerá os planos e lançamentos vinculados.')) return;
-  await sb.from('planos').delete().eq('cliente_id', id);
-  await sb.from('lancamentos').delete().eq('cliente', nome);
-  const {error} = await sb.from('clientes').delete().eq('id', id);
-  if(error){ showToast('Erro ao excluir: '+error.message, true); return; }
-  showToast('Cliente '+nome+' excluído.');
-  await Promise.all([loadClientes(), loadPlanos(), loadLancamentos()]);
-  renderClientes(document.getElementById('search-cliente')?.value||'');
-  renderDashboard();
-}
-
-async function cancelarPlano(id, cliente) {
-  if(!confirm('Cancelar o plano de '+cliente+'? O histórico é mantido. Use 🗑 para excluir permanentemente.')) return;
-  const {error} = await sb.from('planos').update({status:'cancelado'}).eq('id', id);
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  showToast('Plano de '+cliente+' cancelado.');
-  await loadPlanos(); renderPlanos(); renderDashboard();
-}
-
-async function reativarPlano(id, cliente) {
-  const {error} = await sb.from('planos').update({status:'ativo'}).eq('id', id);
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  showToast('Plano de '+cliente+' reativado!');
-  await loadPlanos(); renderPlanos(); renderDashboard();
-}
-
-async function excluirPlano(id, cliente) {
-  if(!confirm('EXCLUIR PERMANENTEMENTE o plano de '+cliente+'? Esta ação não pode ser desfeita.')) return;
-  const {error} = await sb.from('planos').delete().eq('id', id);
-  if(error){ showToast('Erro ao excluir: '+error.message, true); return; }
-  showToast('Plano de '+cliente+' excluído definitivamente.');
-  await loadPlanos(); renderPlanos(); renderDashboard();
-}
-
-function abrirEdicaoCliente(id, nome, telefone, email, nasc) {
-  document.getElementById('ec-id').value = id;
-  document.getElementById('ec-nome').value = nome;
-  document.getElementById('ec-tel').value = telefone;
-  document.getElementById('ec-email').value = email||'';
-  document.getElementById('ec-nasc').value = nasc||'';
-  openModal('modal-editar-cliente');
-}
-
-function abrirEdicaoClienteById(id) {
-  const c = allClientes.find(x => x.id === id);
-  if(!c){ showToast('Cliente não encontrado', true); return; }
-  abrirEdicaoCliente(c.id, c.nome, c.telefone, c.email||'', c.nascimento||'');
+  const nome=document.getElementById('nc-nome').value.trim();
+  const telefone=document.getElementById('nc-tel').value.trim();
+  if(!nome||!telefone){ showToast('Nome e telefone obrigatórios',true); return; }
+  const nomeNorm=nome.toLowerCase(); const telNorm=telefone.replace(/\D/g,'');
+  const dupNome=allClientes.find(c=>c.nome.toLowerCase()===nomeNorm);
+  const dupTel=allClientes.find(c=>c.telefone&&c.telefone.replace(/\D/g,'')===telNorm&&telNorm.length>=8);
+  if(dupNome&&dupTel){ showToast('Já existe um cliente com esse nome e telefone: '+dupNome.nome,true); return; }
+  if(dupNome){ showToast('Já existe um cliente com o nome "'+dupNome.nome+'".',true); return; }
+  if(dupTel){ showToast('O telefone '+telefone+' já está cadastrado para '+dupTel.nome+'.',true); return; }
+  const btn=document.getElementById('btn-salvar-cliente'); btn.textContent='Salvando...'; btn.disabled=true;
+  const {error}=await sb.from('clientes').insert([{nome,telefone,email:document.getElementById('nc-email').value||null,nascimento:document.getElementById('nc-nasc').value||null}]);
+  btn.textContent='Salvar cliente'; btn.disabled=false;
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  closeModal('modal-cliente'); showToast('Cliente cadastrado!');
+  await loadClientes(); renderClientes(); renderDashboard();
 }
 
 async function salvarEdicaoCliente() {
-  const id = document.getElementById('ec-id').value;
-  const nome = document.getElementById('ec-nome').value.trim();
-  const telefone = document.getElementById('ec-tel').value.trim();
-  if(!nome||!telefone){ showToast('Nome e telefone obrigatórios', true); return; }
-  const btn = document.getElementById('btn-salvar-edicao');
-  btn.textContent = 'Salvando...'; btn.disabled = true;
-  const {error} = await sb.from('clientes').update({
-    nome, telefone,
-    email: document.getElementById('ec-email').value||null,
-    nascimento: document.getElementById('ec-nasc').value||null
-  }).eq('id', id);
-  btn.textContent = 'Salvar alterações'; btn.disabled = false;
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  closeModal('modal-editar-cliente');
-  showToast('Cliente atualizado!');
-  await loadClientes();
-  renderClientes(document.getElementById('search-cliente')?.value||'');
+  const id=document.getElementById('ec-id').value;
+  const nome=document.getElementById('ec-nome').value.trim();
+  const telefone=document.getElementById('ec-tel').value.trim();
+  if(!nome||!telefone){ showToast('Nome e telefone obrigatórios',true); return; }
+  const btn=document.getElementById('btn-salvar-edicao'); btn.textContent='Salvando...'; btn.disabled=true;
+  const {error}=await sb.from('clientes').update({nome,telefone,email:document.getElementById('ec-email').value||null,nascimento:document.getElementById('ec-nasc').value||null}).eq('id',id);
+  btn.textContent='Salvar alterações'; btn.disabled=false;
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  closeModal('modal-editar-cliente'); showToast('Cliente atualizado!');
+  await loadClientes(); renderClientes(document.getElementById('search-cliente')?.value||'');
 }
 
-function ativarParaCliente(id, nome) {
+async function confirmarPlano() {
+  const cliente_nome=document.getElementById('ap-cliente').value;
+  const plano=document.getElementById('ap-plano').value;
+  const pagamento=selectedPayment;
+  const data_ativacao=document.getElementById('ap-data').value;
+  if(!cliente_nome||!plano||!pagamento||!data_ativacao){ showToast('Preencha todos os campos',true); return; }
+  const dt=new Date(data_ativacao+'T12:00');
+  const renovacao=new Date(dt); renovacao.setDate(renovacao.getDate()+30);
+  const cliente_obj=allClientes.find(c=>c.nome===cliente_nome);
+  const btn=document.getElementById('btn-confirmar-plano'); btn.textContent='Salvando...'; btn.disabled=true;
+  const {error}=await sb.from('planos').insert([{cliente:cliente_nome,cliente_id:cliente_obj?.id||null,plano,pagamento,status:'ativo',data_ativacao:dt.toISOString().split('T')[0],data_renovacao:renovacao.toISOString().split('T')[0]}]);
+  btn.textContent='Confirmar ativação'; btn.disabled=false;
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  closeModal('modal-ativar'); showToast('Plano ativado!');
+  await loadPlanos(); renderPlanos(); renderDashboard();
+}
+
+function renovarPlano(id,plano) {
+  document.getElementById('ren-plano-id').value=id;
+  document.getElementById('ren-data').value=new Date().toISOString().split('T')[0];
+  calcRenovacaoModal(); openModal('modal-renovar');
+}
+
+function calcRenovacaoModal() {
+  const d=document.getElementById('ren-data').value; if(!d) return;
+  const dt=new Date(d+'T12:00'); const ren=new Date(dt); ren.setDate(ren.getDate()+30);
+  document.getElementById('ren-nova-data').value=ren.toLocaleDateString('pt-BR');
+}
+
+async function confirmarRenovacao() {
+  const id=document.getElementById('ren-plano-id').value;
+  const data=document.getElementById('ren-data').value;
+  if(!data){ showToast('Selecione a data',true); return; }
+  const dt=new Date(data+'T12:00'); const nova=new Date(dt); nova.setDate(nova.getDate()+30);
+  const btn=document.getElementById('btn-confirmar-renovar'); btn.textContent='Salvando...'; btn.disabled=true;
+  const {error}=await sb.from('planos').update({data_ativacao:dt.toISOString().split('T')[0],data_renovacao:nova.toISOString().split('T')[0],status:'ativo'}).eq('id',id);
+  btn.textContent='Confirmar renovação'; btn.disabled=false;
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  closeModal('modal-renovar'); showToast('Plano renovado! Vencimento: '+nova.toLocaleDateString('pt-BR'));
+  await loadPlanos(); renderPlanos(); renderDashboard();
+}
+
+async function excluirLancamento(id,barbeiro) {
+  if(!confirm('Excluir este atendimento? A ficha de '+barbeiro+' será descontada.')) return;
+  const {error}=await sb.from('lancamentos').delete().eq('id',id);
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  const {data:fichaRow}=await sb.from('fichas').select('fichas').eq('barbeiro',barbeiro).single();
+  await sb.from('fichas').upsert([{barbeiro,fichas:Math.max(0,(fichaRow?.fichas||0)-1)}],{onConflict:'barbeiro'});
+  showToast('Atendimento excluído.');
+  await loadLancamentos(); renderLancamentos(); renderDashboard();
+}
+
+async function excluirCliente(id,nome) {
+  if(!confirm('Excluir o cliente '+nome+'? Planos e lançamentos vinculados também serão removidos.')) return;
+  await sb.from('planos').delete().eq('cliente_id',id);
+  await sb.from('lancamentos').delete().eq('cliente',nome);
+  const {error}=await sb.from('clientes').delete().eq('id',id);
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  showToast('Cliente '+nome+' excluído.');
+  await Promise.all([loadClientes(),loadPlanos(),loadLancamentos()]);
+  renderClientes(document.getElementById('search-cliente')?.value||''); renderDashboard();
+}
+
+async function excluirPlano(id,cliente) {
+  if(!confirm('Excluir o plano de '+cliente+'?')) return;
+  const {error}=await sb.from('planos').delete().eq('id',id);
+  if(error){ showToast('Erro: '+error.message,true); return; }
+  showToast('Plano de '+cliente+' excluído.');
+  await loadPlanos(); renderPlanos(); renderDashboard();
+}
+
+function abrirEdicaoClienteById(id) {
+  const c=allClientes.find(x=>x.id===id); if(!c){ showToast('Cliente não encontrado',true); return; }
+  document.getElementById('ec-id').value=c.id;
+  document.getElementById('ec-nome').value=c.nome;
+  document.getElementById('ec-tel').value=c.telefone||'';
+  document.getElementById('ec-email').value=c.email||'';
+  document.getElementById('ec-nasc').value=c.nascimento||'';
+  openModal('modal-editar-cliente');
+}
+
+function ativarParaCliente(id,nome) {
   openModal('modal-ativar');
-  setTimeout(()=>{ const sel = document.getElementById('ap-cliente'); sel.value = nome; }, 100);
+  setTimeout(()=>{ document.getElementById('ap-cliente').value=nome; },100);
 }
 
-// ─── MODAL STEPS ─────────────────────────────────────────
+// ─── NAVIGATION ──────────────────────────────────────────────
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('section-'+id).classList.add('active');
-  const titles={dashboard:'Dashboard',lancamentos:'Lançamentos',planos:'Planos & Pools',clientes:'Clientes',barbeiros:'Barbeiros',fichas:'Fichas & Comissões',admin:'Admin', caixa:'Controle de Caixa'};
-  document.getElementById('topbar-title').textContent = titles[id]||id;
-  document.querySelectorAll('.nav-item').forEach(b=>{ if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('active'); });
-  if(id==='clientes') renderClientes();
-  if(id==='planos') renderPlanos();
-  if(id==='barbeiros') renderBarbeiros();
-  if(id==='fichas') renderFichas();
-  if(id==='caixa') renderCaixa();
-  if(id==='admin') {
-    if(adminDesbloqueado) { document.getElementById('admin-lock').style.display='none'; document.getElementById('admin-panel').style.display='block'; renderAdminPanel(); }
-    else { document.getElementById('admin-lock').style.display='flex'; document.getElementById('admin-panel').style.display='none'; }
-  }
+  const titles={dashboard:'Dashboard',lancamentos:'Lançamentos',planos:'Planos & Pools',clientes:'Clientes',caixa:'Controle de Caixa',barbeiros:'Barbeiros',fichas:'Fichas & Comissões',admin:'Admin'};
+  document.getElementById('topbar-title').textContent=titles[id]||id;
+  document.querySelectorAll('.nav-item').forEach(b=>{ if(b.getAttribute('onclick')?.includes("'"+id+"'")) b.classList.add('active'); });
   if(id==='dashboard') renderDashboard();
   if(id==='lancamentos') renderLancamentos();
+  if(id==='planos') renderPlanos();
+  if(id==='clientes') renderClientes();
+  if(id==='caixa') renderCaixa();
+  if(id==='barbeiros') renderBarbeiros();
+  if(id==='fichas') renderFichas();
+  if(id==='admin') {
+    if(adminDesbloqueado){ document.getElementById('admin-lock').style.display='none'; document.getElementById('admin-panel').style.display='block'; renderAdminPanel(); }
+    else{ document.getElementById('admin-lock').style.display='flex'; document.getElementById('admin-panel').style.display='none'; }
+  }
 }
 
 function openModal(id) {
@@ -1278,24 +1158,21 @@ function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
 function showStep(n) {
   currentStep=n;
-  [1,2,3].forEach(i=>{
-    document.getElementById('step-'+i).style.display=i===n?'block':'none';
-    document.getElementById('st'+i).className='step'+(i<n?' done':i===n?' active':'');
-  });
+  [1,2,3].forEach(i=>{ document.getElementById('step-'+i).style.display=i===n?'block':'none'; document.getElementById('st'+i).className='step'+(i<n?' done':i===n?' active':''); });
   if(n===3) updateResumo();
 }
 function nextStep(n){ showStep(n); }
 
-function selectPayment(p){
+function selectPayment(p) {
   selectedPayment=p;
-  ['PIX','Crédito','Débito','Dinheiro'].forEach(x=>{
-    const key = x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    const el = document.getElementById(key+'-opt');
-    if(el) el.classList.toggle('selected', x===p);
+  ['PIX','Crédito','Débito','Dinheiro','Débito Automático'].forEach(x=>{
+    const key=x==='Débito Automático'?'automatico':x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const el=document.getElementById(key+'-opt');
+    if(el) el.classList.toggle('selected',x===p);
   });
 }
 
-function updateResumo(){
+function updateResumo() {
   const d=document.getElementById('ap-data').value; if(!d) return;
   const dt=new Date(d+'T12:00'); const ren=new Date(dt); ren.setDate(ren.getDate()+30);
   document.getElementById('ap-renovacao').value=ren.toLocaleDateString('pt-BR');
@@ -1311,288 +1188,32 @@ function updateResumo(){
   </div>`;
 }
 
-function updateDuracao(){
-  const s=document.getElementById('lan-servico').value;
-  document.getElementById('lan-duracao').value=PLAN_DUR[s]||'—';
-}
+function updateDuracao(){ document.getElementById('lan-duracao').value=PLAN_DUR[document.getElementById('lan-servico').value]||'—'; }
 
-function populateClienteSelects(){
-  ['ap-cliente','lan-cliente'].forEach(id=>{
-    const sel=document.getElementById(id); if(!sel) return;
-    const cur=sel.value;
-    sel.innerHTML='<option value="">Selecionar cliente...</option>';
-    allClientes.forEach(c=>{ const o=document.createElement('option'); o.value=c.nome; o.textContent=c.nome; sel.appendChild(o); });
-    if(cur) sel.value=cur;
-  });
+function populateClienteSelects() {
+  ['ap-cliente','lan-cliente'].forEach(id=>{ const sel=document.getElementById(id); if(!sel) return; const cur=sel.value; sel.innerHTML='<option value="">Selecionar cliente...</option>'; allClientes.forEach(c=>{ const o=document.createElement('option'); o.value=c.nome; o.textContent=c.nome; sel.appendChild(o); }); if(cur) sel.value=cur; });
 }
 
 function filtrarClientes(v){ renderClientes(v); }
 
-// ─── HELPERS ─────────────────────────────────────────────
-function planBadge(plano){
-  const cls = plano==='cabelo'?'badge-warning':plano==='barba'?'badge-info':'badge-purple';
-  return `<span class="badge ${cls}">${PLAN_NAMES[plano]||plano}</span>`;
-}
-function fmtDate(d){ if(!d) return '—'; try{ return new Date(d+'T12:00').toLocaleDateString('pt-BR'); } catch{ return d; } }
-function fmtDatetime(d){ if(!d) return '—'; try{ const dt=new Date(d); return dt.toLocaleDateString('pt-BR')+' '+dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); } catch{ return d; } }
+// ─── HELPERS ─────────────────────────────────────────────────
+function planBadge(plano){ const cls=plano==='cabelo'?'badge-warning':plano==='barba'?'badge-info':'badge-purple'; return `<span class="badge ${cls}">${PLAN_NAMES[plano]||plano}</span>`; }
+function fmtDate(d){ if(!d) return '—'; try{ return new Date(d+'T12:00').toLocaleDateString('pt-BR'); }catch{ return d; } }
+function fmtDatetime(d){ if(!d) return '—'; try{ const dt=new Date(d); return dt.toLocaleDateString('pt-BR')+' '+dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }catch{ return d; } }
 
 let toastTimer;
-function showToast(msg, error=false){
-  const t=document.getElementById('toast');
-  document.getElementById('toast-msg').textContent=msg;
-  t.className='toast show'+(error?' error-toast':'');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-// ─── AUTO RENOVAÇÃO DÉBITO AUTOMÁTICO ────────────────────
-// Processa renovações/mensalidade para planos com débito automático.
-// Gera: (1) lancamento mensal em lancamentos, (2) entrada no caixa (categoria: Plano mensal),
-// e (3) avança data_renovacao em +30 dias.
-async function processarDebitosAutomáticos() {
-
-  const hoje = new Date();
-  hoje.setHours(0,0,0,0);
-
-  // Competência atual (yyyy-mm) para deduplicar o ciclo
-  const competenciaAtual = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0');
-
-  const planosDebAuto = allPlanos.filter(p =>
-    p.pagamento==='Débito Automático' &&
-    p.status==='ativo' &&
-    p.data_renovacao &&
-    new Date(p.data_renovacao+'T12:00') <= hoje
-  );
-
-  if(!planosDebAuto.length) return;
-
-  // Deduplicar: se já existe um lançamento do cliente/plano no ciclo atual, não cria outro.
-  // (Sem campo adicional no schema, usamos (cliente, servico=plano, pagamento, data_atendimento=yyyy-mm-01).)
-  const dataCompetencia = competenciaAtual + '-01';
-  const clientesSet = new Set(planosDebAuto.map(p=>p.cliente));
-
-  const {data: existentes, error: errExist} = await sb.from('lancamentos')
-    .select('id,cliente,servico,pagamento,data_atendimento')
-    .eq('pagamento','Débito Automático')
-    .eq('data_atendimento', dataCompetencia)
-    .in('cliente', Array.from(clientesSet))
-    .limit(500);
-
-  if(errExist) {
-    showToast('Erro processando débito automático: '+errExist.message, true);
-    return;
-  }
-
-  const existentesKeys = new Set((existentes||[]).map(r => `${r.cliente}__${r.servico}`));
-
-  let processados = 0;
-
-  for(const p of planosDebAuto) {
-    const key = `${p.cliente}__${p.plano}`;
-    if(existentesKeys.has(key)) continue;
-
-    const now = new Date();
-    const hora = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-
-    // (1) Lançamento mensal (para pool/fichas/comissão)
-    await sb.from('lancamentos').insert([{
-      cliente: p.cliente,
-      barbeiro: 'Pool',
-      servico: p.plano,
-      pagamento: 'Débito Automático',
-      hora,
-      data_atendimento: dataCompetencia,
-    }]);
-
-    // (2) Caixa: entrada
-    const valorPlano = PLAN_PRICES[p.plano] || 0;
-    if(valorPlano > 0) {
-      await sb.from('caixa').insert([{
-        tipo: 'entrada',
-        categoria: 'Plano mensal',
-        valor: valorPlano,
-        descricao: 'Plano mensal ('+p.cliente+')',
-        data: dataCompetencia
-      }]);
-    }
-
-    // (3) Avançar renovação
-    const novaAtiv = new Date(p.data_renovacao+'T12:00');
-    const novaRen = new Date(novaAtiv);
-    novaRen.setDate(novaRen.getDate()+30);
-
-    await sb.from('planos').update({
-      data_ativacao: novaAtiv.toISOString().split('T')[0],
-      data_renovacao: novaRen.toISOString().split('T')[0]
-    }).eq('id', p.id);
-
-    processados++;
-  }
-
-  await Promise.all([loadPlanos(), loadLancamentos(), loadCaixa()]);
-  if(processados > 0) showToast(processados+' lançamento(s) de débito automático processado(s)! ↻');
-}
-
-
-// ─── CAIXA ───────────────────────────────────────────────
-const CX_CAT_ENTRADA = {plano:'Plano mensal',avulso:'Atendimento avulso',produto:'Venda de produto',outro_entrada:'Outro (entrada)'};
-const CX_CAT_SAIDA   = {aluguel:'Aluguel',produto_compra:'Compra de produto',salario:'Salário / Retirada',manutencao:'Manutenção',outro_saida:'Outro (saída)'};
-
-function updateCxCategoria() {
-  const tipo = document.getElementById('cx-tipo').value;
-  const sel  = document.getElementById('cx-categoria');
-  const cats = tipo==='entrada' ? CX_CAT_ENTRADA : CX_CAT_SAIDA;
-  sel.innerHTML = Object.entries(cats).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
-}
-
-function populateCxMesFiltro() {
-  const sel = document.getElementById('cx-mes-filtro'); if(!sel) return;
-  const meses = new Set();
-  allCaixa.forEach(c=>{ if(c.data) meses.add(c.data.substring(0,7)); });
-  const now = new Date();
-  const cur = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  meses.add(cur);
-  const sorted = Array.from(meses).sort().reverse();
-  const prev = sel.value || cur;
-  sel.innerHTML = '<option value="">Todo o período</option>';
-  sorted.forEach(m => {
-    const [y,mo] = m.split('-');
-    const label = new Date(Number(y),Number(mo)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-    const o = document.createElement('option');
-    o.value=m; o.textContent=label.charAt(0).toUpperCase()+label.slice(1); sel.appendChild(o);
-  });
-  sel.value = prev;
-}
-
-async function lancarCaixa() {
-  const tipo      = document.getElementById('cx-tipo').value;
-  const categoria = document.getElementById('cx-categoria').value;
-  const valorRaw  = parseFloat(document.getElementById('cx-valor').value);
-  const descricao = document.getElementById('cx-descricao').value.trim();
-  const data      = document.getElementById('cx-data').value;
-  if(!valorRaw||valorRaw<=0){ showToast('Informe um valor válido', true); return; }
-  if(!data){ showToast('Informe a data', true); return; }
-  const valor = tipo==='saida' ? -Math.abs(valorRaw) : Math.abs(valorRaw);
-  const {error} = await sb.from('caixa').insert([{tipo,categoria,valor,descricao,data}]);
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  showToast((tipo==='entrada'?'Entrada':'Saída')+' de R$ '+Math.abs(valor).toFixed(2).replace('.',',')+' registrada!');
-  document.getElementById('cx-valor').value='';
-  document.getElementById('cx-descricao').value='';
-  await loadCaixa(); renderCaixa(); renderDashboard();
-}
-
-function renderCaixa() {
-  populateCxMesFiltro();
-  const mesFiltro  = document.getElementById('cx-mes-filtro')?.value  || '';
-  const tipoFiltro = document.getElementById('cx-tipo-filtro')?.value || '';
-  let items = allCaixa;
-  if(mesFiltro)  items = items.filter(c=>c.data&&c.data.startsWith(mesFiltro));
-  if(tipoFiltro) items = items.filter(c=>c.tipo===tipoFiltro);
-
-  // Cards (always full current month)
-  const now  = new Date();
-  const mes  = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const hoje = now.toISOString().split('T')[0];
-  const cxM  = allCaixa.filter(c=>c.data&&c.data.startsWith(mes));
-  const entM = cxM.filter(c=>c.tipo==='entrada').reduce((s,c)=>s+Math.abs(c.valor),0);
-  const saiM = cxM.filter(c=>c.tipo==='saida').reduce((s,c)=>s+Math.abs(c.valor),0);
-  const salM = entM - saiM;
-  const cxH  = allCaixa.filter(c=>c.data===hoje);
-  const salH = cxH.reduce((s,c)=>s+(c.tipo==='entrada'?Math.abs(c.valor):-Math.abs(c.valor)),0);
-  const fmt  = v=>'R$ '+Math.abs(v).toFixed(2).replace('.',',');
-  document.getElementById('cx-entradas').textContent = fmt(entM);
-  document.getElementById('cx-saidas').textContent   = fmt(saiM);
-  const salEl = document.getElementById('cx-saldo');
-  salEl.textContent = fmt(salM); salEl.style.color = salM>=0?'var(--success)':'var(--danger)';
-  const hojEl = document.getElementById('cx-hoje');
-  hojEl.textContent = (salH>=0?'+':'')+fmt(salH); hojEl.style.color = salH>=0?'var(--success)':'var(--danger)';
-
-  // Table
-  const tbody = document.getElementById('cx-tabela');
-  const allCats = {...CX_CAT_ENTRADA,...CX_CAT_SAIDA};
-  if(!items.length){
-    tbody.innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Nenhum lançamento no período</td></tr>';
-    document.getElementById('cx-totais').innerHTML=''; return;
-  }
-  tbody.innerHTML = items.map(c=>{
-    const isEnt = c.tipo==='entrada';
-    const valFmt = (isEnt?'+':'−')+' R$ '+Math.abs(c.valor).toFixed(2).replace('.',',');
-    const dataFmt = c.data ? new Date(c.data+'T12:00').toLocaleDateString('pt-BR') : '—';
-    return `<tr>
-      <td style="color:var(--muted)">${dataFmt}</td>
-      <td><span class="badge ${isEnt?'badge-success':'badge-danger'}" style="font-size:10px">${isEnt?'entrada':'saída'}</span></td>
-      <td style="font-size:12px;color:var(--muted)">${allCats[c.categoria]||c.categoria||'—'}</td>
-      <td>${c.descricao||'<span style="color:var(--muted)">—</span>'}</td>
-      <td style="font-weight:500;color:${isEnt?'var(--success)':'var(--danger)'}">${valFmt}</td>
-      <td><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:var(--danger);border-color:rgba(224,85,85,0.3)" onclick="excluirCaixa('${c.id}')">🗑</button></td>
-    </tr>`;
-  }).join('');
-
-  const tEnt = items.filter(c=>c.tipo==='entrada').reduce((s,c)=>s+Math.abs(c.valor),0);
-  const tSai = items.filter(c=>c.tipo==='saida').reduce((s,c)=>s+Math.abs(c.valor),0);
-  const tSal = tEnt - tSai;
-  document.getElementById('cx-totais').innerHTML = `
-    <span>Entradas: <strong style="color:var(--success)">R$ ${tEnt.toFixed(2).replace('.',',')}</strong></span>
-    <span>Saídas: <strong style="color:var(--danger)">R$ ${tSai.toFixed(2).replace('.',',')}</strong></span>
-    <span>Saldo: <strong style="color:${tSal>=0?'var(--success)':'var(--danger)'}">R$ ${tSal.toFixed(2).replace('.',',')}</strong></span>
-    <span style="margin-left:auto;color:var(--muted)">${items.length} lançamento(s)</span>`;
-}
-
-async function excluirCaixa(id) {
-  if(!confirm('Excluir este lançamento de caixa?')) return;
-  const {error} = await sb.from('caixa').delete().eq('id', id);
-  if(error){ showToast('Erro: '+error.message, true); return; }
-  showToast('Lançamento excluído.');
-  await loadCaixa(); renderCaixa(); renderDashboard();
-}
+function showToast(msg,error=false){ const t=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg; t.className='toast show'+(error?' error-toast':''); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3500); }
 
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
 
-// Roda automaticamente ao abrir o site (para processar mensalidades do débito automático).
-// Obs: supabase pode levar alguns ms; por isso chamamos após init() disparar o carregamento.
-init().then(()=>{
-  try {
-    // processar uma vez ao abrir; evita duplicar via deduplicação por competência/cliente.
-    processarDebitosAutomáticos();
-  } catch(e) {}
-});
+init();
 </script>
 
-
-<!-- SQL para criar as tabelas no Supabase (cole no SQL Editor):
-CREATE TABLE IF NOT EXISTS clientes (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  nome text NOT NULL,
-  telefone text,
-  email text,
-  nascimento date,
-  created_at timestamptz DEFAULT now()
-);
-CREATE TABLE IF NOT EXISTS planos (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  cliente text NOT NULL,
-  cliente_id uuid REFERENCES clientes(id),
-  plano text NOT NULL,
-  pagamento text,
-  status text DEFAULT 'ativo',
-  data_ativacao date,
-  data_renovacao date,
-  created_at timestamptz DEFAULT now()
-);
-CREATE TABLE IF NOT EXISTS lancamentos (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  cliente text NOT NULL,
-  barbeiro text NOT NULL,
-  servico text NOT NULL,
-  pagamento text,
-  hora text,
-  data_atendimento date,
-  created_at timestamptz DEFAULT now()
-);
-CREATE TABLE IF NOT EXISTS fichas (
-  barbeiro text PRIMARY KEY,
-  fichas integer DEFAULT 0
-);
+<!-- SQL para criar as tabelas no Supabase:
+CREATE TABLE IF NOT EXISTS clientes (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, nome text NOT NULL, telefone text, email text, nascimento date, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS planos (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, cliente text NOT NULL, cliente_id uuid REFERENCES clientes(id), plano text NOT NULL, pagamento text, status text DEFAULT 'ativo', data_ativacao date, data_renovacao date, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS lancamentos (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, cliente text NOT NULL, barbeiro text NOT NULL, servico text NOT NULL, pagamento text, hora text, data_atendimento date, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS fichas (barbeiro text PRIMARY KEY, fichas integer DEFAULT 0);
 ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE planos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lancamentos ENABLE ROW LEVEL SECURITY;
