@@ -1346,24 +1346,93 @@ function showToast(msg, error=false){
 }
 
 // ─── AUTO RENOVAÇÃO DÉBITO AUTOMÁTICO ────────────────────
-async function autoRenovarDebitos() {
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const vencidos = allPlanos.filter(p =>
-    p.pagamento==='Débito Automático' && p.status==='ativo' &&
-    p.data_renovacao && new Date(p.data_renovacao+'T12:00') <= hoje
+// Processa renovações/mensalidade para planos com débito automático.
+// Gera: (1) lancamento mensal em lancamentos, (2) entrada no caixa (categoria: Plano mensal),
+// e (3) avança data_renovacao em +30 dias.
+async function processarDebitosAutomáticos() {
+
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+
+  // Competência atual (yyyy-mm) para deduplicar o ciclo
+  const competenciaAtual = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0');
+
+  const planosDebAuto = allPlanos.filter(p =>
+    p.pagamento==='Débito Automático' &&
+    p.status==='ativo' &&
+    p.data_renovacao &&
+    new Date(p.data_renovacao+'T12:00') <= hoje
   );
-  if(!vencidos.length) return;
-  await Promise.all(vencidos.map(p => {
+
+  if(!planosDebAuto.length) return;
+
+  // Deduplicar: se já existe um lançamento do cliente/plano no ciclo atual, não cria outro.
+  // (Sem campo adicional no schema, usamos (cliente, servico=plano, pagamento, data_atendimento=yyyy-mm-01).)
+  const dataCompetencia = competenciaAtual + '-01';
+  const clientesSet = new Set(planosDebAuto.map(p=>p.cliente));
+
+  const {data: existentes, error: errExist} = await sb.from('lancamentos')
+    .select('id,cliente,servico,pagamento,data_atendimento')
+    .eq('pagamento','Débito Automático')
+    .eq('data_atendimento', dataCompetencia)
+    .in('cliente', Array.from(clientesSet))
+    .limit(500);
+
+  if(errExist) {
+    showToast('Erro processando débito automático: '+errExist.message, true);
+    return;
+  }
+
+  const existentesKeys = new Set((existentes||[]).map(r => `${r.cliente}__${r.servico}`));
+
+  let processados = 0;
+
+  for(const p of planosDebAuto) {
+    const key = `${p.cliente}__${p.plano}`;
+    if(existentesKeys.has(key)) continue;
+
+    const now = new Date();
+    const hora = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+
+    // (1) Lançamento mensal (para pool/fichas/comissão)
+    await sb.from('lancamentos').insert([{
+      cliente: p.cliente,
+      barbeiro: 'Pool',
+      servico: p.plano,
+      pagamento: 'Débito Automático',
+      hora,
+      data_atendimento: dataCompetencia,
+    }]);
+
+    // (2) Caixa: entrada
+    const valorPlano = PLAN_PRICES[p.plano] || 0;
+    if(valorPlano > 0) {
+      await sb.from('caixa').insert([{
+        tipo: 'entrada',
+        categoria: 'Plano mensal',
+        valor: valorPlano,
+        descricao: 'Plano mensal ('+p.cliente+')',
+        data: dataCompetencia
+      }]);
+    }
+
+    // (3) Avançar renovação
     const novaAtiv = new Date(p.data_renovacao+'T12:00');
-    const novaRen = new Date(novaAtiv); novaRen.setDate(novaRen.getDate()+30);
-    return sb.from('planos').update({
+    const novaRen = new Date(novaAtiv);
+    novaRen.setDate(novaRen.getDate()+30);
+
+    await sb.from('planos').update({
       data_ativacao: novaAtiv.toISOString().split('T')[0],
       data_renovacao: novaRen.toISOString().split('T')[0]
     }).eq('id', p.id);
-  }));
-  await loadPlanos();
-  showToast(vencidos.length+' plano(s) com débito automático renovado(s)! ↻');
+
+    processados++;
+  }
+
+  await Promise.all([loadPlanos(), loadLancamentos(), loadCaixa()]);
+  if(processados > 0) showToast(processados+' lançamento(s) de débito automático processado(s)! ↻');
 }
+
 
 // ─── CAIXA ───────────────────────────────────────────────
 const CX_CAT_ENTRADA = {plano:'Plano mensal',avulso:'Atendimento avulso',produto:'Venda de produto',outro_entrada:'Outro (entrada)'};
@@ -1479,8 +1548,16 @@ async function excluirCaixa(id) {
 
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
 
-init();
+// Roda automaticamente ao abrir o site (para processar mensalidades do débito automático).
+// Obs: supabase pode levar alguns ms; por isso chamamos após init() disparar o carregamento.
+init().then(()=>{
+  try {
+    // processar uma vez ao abrir; evita duplicar via deduplicação por competência/cliente.
+    processarDebitosAutomáticos();
+  } catch(e) {}
+});
 </script>
+
 
 <!-- SQL para criar as tabelas no Supabase (cole no SQL Editor):
 CREATE TABLE IF NOT EXISTS clientes (
